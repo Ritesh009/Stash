@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -20,79 +21,82 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh;overscroll-behavior:none}
 
-    header{position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 16px) 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;letter-spacing:-.02em;color:var(--accent)}
-    .logo span{font-size:11px;font-family:'DM Sans',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;font-weight:300;margin-bottom:2px}
-    .header-actions{display:flex;gap:8px}
-    .btn{border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:8px;transition:all .15s;padding:8px 14px}
-    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-    .btn-ghost:active{background:var(--surface)}
-    .btn-primary{background:var(--accent);color:#0d0d0f}
-    .btn-primary:active{opacity:.85}
+```
+header{position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 16px) 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;letter-spacing:-.02em;color:var(--accent)}
+.logo span{font-size:11px;font-family:'DM Sans',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;font-weight:300;margin-bottom:2px}
+.header-actions{display:flex;gap:8px}
+.btn{border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:8px;transition:all .15s;padding:8px 14px}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:active{background:var(--surface)}
+.btn-primary{background:var(--accent);color:#0d0d0f}
+.btn-primary:active{opacity:.85}
 
-    .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
-    .tab{flex:1;padding:13px 8px;text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s}
-    .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
+.tab{flex:1;padding:13px 8px;text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-    .controls{padding:14px 20px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border)}
-    .search-wrap{position:relative}
-    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
-    input[type=text],input[type=search],input[type=url],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;appearance:none}
-    input[type=search]{padding-left:38px}
-    input::placeholder,textarea::placeholder{color:var(--muted)}
-    input:focus,textarea:focus{border-color:var(--dim)}
-    textarea{resize:none;line-height:1.5}
-    .row{display:flex;gap:8px;align-items:center}
-    select{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;cursor:pointer;flex-shrink:0}
-    .count{margin-left:auto;font-size:11px;color:var(--muted);letter-spacing:.05em;white-space:nowrap}
+.controls{padding:14px 20px 10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border)}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+input[type=text],input[type=search],input[type=url],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;appearance:none}
+input[type=search]{padding-left:38px}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,textarea:focus{border-color:var(--dim)}
+textarea{resize:none;line-height:1.5}
+.row{display:flex;gap:8px;align-items:center}
+select{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;cursor:pointer;flex-shrink:0}
+.count{margin-left:auto;font-size:11px;color:var(--muted);letter-spacing:.05em;white-space:nowrap}
 
-    .tag-bar{padding:10px 20px;display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--border)}
-    .tag-bar::-webkit-scrollbar{display:none}
-    .tag-bar.hidden{display:none}
-    .tag-pill{flex-shrink:0;border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 13px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
-    .tag-pill.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent)}
+.tag-bar{padding:10px 20px;display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.tag-bar::-webkit-scrollbar{display:none}
+.tag-bar.hidden{display:none}
+.tag-pill{flex-shrink:0;border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 13px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
+.tag-pill.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent)}
 
-    .form-panel{border-bottom:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:12px;background:#0f0f12;animation:fadeSlide .2s ease}
-    .form-panel.hidden{display:none}
-    @keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-    label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-weight:500}
-    .form-error{font-size:12px;color:var(--danger)}
-    .form-error.hidden{display:none}
-    .type-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
-    .type-btn{flex:1;padding:8px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
-    .type-btn.active{background:var(--accent);color:#0d0d0f}
+.form-panel{border-bottom:1px solid var(--border);padding:18px 20px;display:flex;flex-direction:column;gap:12px;background:#0f0f12;animation:fadeSlide .2s ease}
+.form-panel.hidden{display:none}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-weight:500}
+.form-error{font-size:12px;color:var(--danger)}
+.form-error.hidden{display:none}
+.type-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.type-btn{flex:1;padding:8px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
+.type-btn.active{background:var(--accent);color:#0d0d0f}
 
-    .list{padding:12px 20px;padding-bottom:calc(20px + var(--safe-bot));display:flex;flex-direction:column;gap:10px}
-    .empty{text-align:center;color:var(--muted);font-size:14px;font-style:italic;padding:80px 20px;line-height:1.7}
+.list{padding:12px 20px;padding-bottom:calc(20px + var(--safe-bot));display:flex;flex-direction:column;gap:10px}
+.empty{text-align:center;color:var(--muted);font-size:14px;font-style:italic;padding:80px 20px;line-height:1.7}
 
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;animation:cardIn .2s ease}
-    @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-    .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-    .card-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--accent);line-height:1.3}
-    .card-desc{font-size:13px;color:var(--muted);line-height:1.6}
-    .card-tags{display:flex;gap:6px;flex-wrap:wrap}
-    .card-tag{font-size:10px;padding:3px 9px;border-radius:20px;letter-spacing:.04em;cursor:pointer;border:1px solid transparent}
-    .card-date{font-size:10px;color:var(--dim);letter-spacing:.05em}
-    .delete-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:color .15s}
-    .delete-btn:active{color:var(--danger)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;animation:cardIn .2s ease}
+@keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--accent);line-height:1.3}
+.card-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.card-tag{font-size:10px;padding:3px 9px;border-radius:20px;letter-spacing:.04em;cursor:pointer;border:1px solid transparent}
+.card-date{font-size:10px;color:var(--dim);letter-spacing:.05em}
+.delete-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:color .15s}
+.delete-btn:active{color:var(--danger)}
 
-    .card-url-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--link);letter-spacing:.03em;background:#4D96FF18;border:1px solid #4D96FF33;padding:4px 10px;border-radius:20px;text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .card-favicon{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.card-url-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--link);letter-spacing:.03em;background:#4D96FF18;border:1px solid #4D96FF33;padding:4px 10px;border-radius:20px;text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-favicon{width:14px;height:14px;border-radius:3px;flex-shrink:0}
 
-    .page{display:none}
-    .page.active{display:block}
+.page{display:none}
+.page.active{display:block}
 
-    .bmk-page{padding:24px 20px;padding-bottom:calc(40px + var(--safe-bot));display:flex;flex-direction:column;gap:16px}
-    .bmk-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
-    .bmk-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--accent)}
-    .bmk-body{font-size:13px;color:var(--muted);line-height:1.75}
-    .bmk-body strong{color:var(--text);font-weight:500}
-    .bmk-step{display:flex;gap:12px;align-items:flex-start}
-    .bmk-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#0d0d0f;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-    .bmk-code{background:#0a0a0d;border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11px;color:#a0c4ff;font-family:monospace;word-break:break-all;line-height:1.6;user-select:all;-webkit-user-select:all}
+.bmk-page{padding:24px 20px;padding-bottom:calc(40px + var(--safe-bot));display:flex;flex-direction:column;gap:16px}
+.bmk-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.bmk-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--accent)}
+.bmk-body{font-size:13px;color:var(--muted);line-height:1.75}
+.bmk-body strong{color:var(--text);font-weight:500}
+.bmk-step{display:flex;gap:12px;align-items:flex-start}
+.bmk-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#0d0d0f;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.bmk-code{background:#0a0a0d;border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11px;color:#a0c4ff;font-family:monospace;word-break:break-all;line-height:1.6;user-select:all;-webkit-user-select:all}
 
-    .toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--accent);color:#0d0d0f;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
-    .toast.show{opacity:1}
+.toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--accent);color:#0d0d0f;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
+.toast.show{opacity:1}
+```
+
   </style>
 </head>
 <body>
@@ -113,6 +117,7 @@
 </div>
 
 <!-- ITEMS PAGE -->
+
 <div class="page active" id="page-items">
 
   <div class="form-panel hidden" id="formPanel">
@@ -169,71 +174,62 @@
 </div>
 
 <!-- BOOKMARKLET PAGE -->
+
 <div class="page" id="page-bookmarklet">
   <div class="bmk-page">
 
-    <div class="bmk-section">
-      <div class="bmk-title">Safari Clip Bookmarklet</div>
-      <div class="bmk-body">While browsing any page in Safari, tap the <strong>"Stash It"</strong> bookmark and the page title + URL will be saved to Stash instantly — no typing needed.</div>
-      <div class="bmk-title">Safari Clip</div>
-      <div class="bmk-body">Once set up, you'll have a <strong>"Stash It"</strong> bookmark in Safari. Tap it on any page and the title + URL is instantly saved to Stash.</div>
-    </div>
+```
+<div class="bmk-section">
+  <div class="bmk-title">Safari Clip</div>
+  <div class="bmk-body">Once set up, you'll have a <strong>"Stash It"</strong> bookmark in Safari. Tap it on any page and the title + URL is instantly saved to Stash.</div>
+</div>
 
-    <div class="bmk-section">
-      <div class="bmk-title" style="font-size:15px">Setup (one-time)</div>
-
-      <div class="bmk-step">
-        <div class="bmk-num">1</div>
-        <div class="bmk-body"><strong>Copy the code below</strong> — tap it to select, then copy.</div>
-        <div style="flex:1">
-          <div class="bmk-body" style="margin-bottom:10px"><strong>Copy this code</strong></div>
-          <div class="bmk-code" id="bookmarkletCode"></div>
-          <button class="btn btn-primary" id="copyBookmarklet" style="margin-top:10px">Copy Code</button>
-        </div>
-      </div>
+<div class="bmk-section">
+  <div class="bmk-step">
+    <div class="bmk-num">1</div>
+    <div style="flex:1">
+      <div class="bmk-body" style="margin-bottom:10px"><strong>Copy this code</strong></div>
       <div class="bmk-code" id="bookmarkletCode"></div>
-      <button class="btn btn-primary" id="copyBookmarklet" style="align-self:flex-start">Copy Code</button>
+      <button class="btn btn-primary" id="copyBookmarklet" style="margin-top:10px">Copy Code</button>
     </div>
+  </div>
+</div>
 
-    <div class="bmk-section">
-      <div class="bmk-step">
-        <div class="bmk-num">2</div>
-        <div class="bmk-body">In Safari, bookmark <strong>any page</strong> (Share → Add Bookmark). Name it <strong>"Stash It"</strong>.</div>
-        <div class="bmk-body">
-          In Safari, go to <strong>any website</strong> and tap the <strong>Share button</strong> (↑ box with arrow at the bottom) → tap <strong>"Add Bookmark"</strong> → name it <strong>"Stash It"</strong> → tap <strong>Save</strong>.
-        </div>
-      </div>
+<div class="bmk-section">
+  <div class="bmk-step">
+    <div class="bmk-num">2</div>
+    <div class="bmk-body">
+      In Safari, go to <strong>any website</strong> and tap the <strong>Share button</strong> (↑ box with arrow at the bottom) → tap <strong>"Add Bookmark"</strong> → name it <strong>"Stash It"</strong> → tap <strong>Save</strong>.
     </div>
+  </div>
+</div>
 
-    <div class="bmk-section">
-      <div class="bmk-step">
-        <div class="bmk-num">3</div>
-        <div class="bmk-body">Open Bookmarks, long-press <strong>"Stash It"</strong> → Edit. <strong>Clear the URL field</strong> and paste the copied code. Save.</div>
-        <div class="bmk-body">
-          Open <strong>Bookmarks</strong> in Safari → find <strong>"Stash It"</strong> → swipe left → tap <strong>Edit</strong>.<br><br>
-          In the URL field: <strong>select all → delete → paste</strong> the code from Step 1.<br><br>
-          Tap <strong>Done</strong>.
-        </div>
-      </div>
+<div class="bmk-section">
+  <div class="bmk-step">
+    <div class="bmk-num">3</div>
+    <div class="bmk-body">
+      Open <strong>Bookmarks</strong> in Safari → find <strong>"Stash It"</strong> → swipe left → tap <strong>Edit</strong>.<br><br>
+      In the URL field: <strong>select all → delete → paste</strong> the code from Step 1.<br><br>
+      Tap <strong>Done</strong>.
     </div>
+  </div>
+</div>
 
-    <div class="bmk-section">
-      <div class="bmk-step">
-        <div class="bmk-num">4</div>
-        <div class="bmk-body"><strong>Done!</strong> Browse anywhere, open Bookmarks, tap <strong>"Stash It"</strong> — the page is saved.</div>
-        <div class="bmk-body">
-          <strong>Test it —</strong> browse to any page, open Bookmarks, tap <strong>"Stash It"</strong>. You should see <em>"Page stashed ✓"</em> in Stash.
-        </div>
-      </div>
+<div class="bmk-section">
+  <div class="bmk-step">
+    <div class="bmk-num">4</div>
+    <div class="bmk-body">
+      <strong>Test it —</strong> browse to any page, open Bookmarks, tap <strong>"Stash It"</strong>. You should see <em>"Page stashed ✓"</em> in Stash.
     </div>
+  </div>
+</div>
 
-    <div class="bmk-section">
-      <div class="bmk-title" style="font-size:15px">💡 Pro tip</div>
-      <div class="bmk-body">In Safari Settings → enable <strong>Show Favorites Bar</strong>, then move "Stash It" to Favorites for one-tap clipping while browsing.</div>
-      <div class="bmk-body">
-        ⚠️ <strong>Note:</strong> Keep Stash open in Safari (not the home screen icon) for clipping to work. Safari and the home screen app store data separately on iOS — this is a known limitation we're working around.
-      </div>
-    </div>
+<div class="bmk-section">
+  <div class="bmk-body">
+    ⚠️ <strong>Note:</strong> Keep Stash open in Safari (not the home screen icon) for clipping to work. Safari and the home screen app store data separately on iOS — this is a known limitation we're working around.
+  </div>
+</div>
+```
 
   </div>
 </div>
@@ -350,7 +346,7 @@ $("importFile").addEventListener("change",function(){
       const dupes=valid.length-newItems.length;
       items=[...newItems,...items];
       save();render();
-      const msg=dupes>0?Imported ${newItems.length} items (${dupes} skipped):Imported ${newItems.length} items ✓;
+      const msg=dupes>0?`Imported ${newItems.length} items (${dupes} skipped)`:`Imported ${newItems.length} items ✓`;
       showToast(msg);
     }catch{showToast("Couldn't read file ✕");}
     $("importFile").value="";
@@ -361,7 +357,6 @@ $("importFile").addEventListener("change",function(){
 // Bookmarklet
 function buildBookmarklet(){
   const code=`javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();`;
-  const code=javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();;
   $("bookmarkletCode").textContent=code;
 }
 buildBookmarklet();
@@ -408,11 +403,9 @@ function render(){
   else result.sort((a,b)=>b.createdAt-a.createdAt);
 
   countLabel.textContent=`${result.length} / ${items.length} item${items.length!==1?"s":""}`;
-  countLabel.textContent=${result.length} / ${items.length} item${items.length!==1?"s":""};
 
   if(!result.length){
     itemList.innerHTML=`<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match your search."}</div>`;
-    itemList.innerHTML=<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match your search."}</div>;
     return;
   }
 
@@ -424,7 +417,6 @@ function render(){
     const titleEl=document.createElement("div");titleEl.className="card-title";titleEl.textContent=item.title;
     const del=document.createElement("button");del.className="delete-btn";del.innerHTML="✕";
     del.addEventListener("click",()=>{if(confirm(`Delete "${item.title}"?`)){items=items.filter(i=>i.id!==item.id);save();render()}});
-    del.addEventListener("click",()=>{if(confirm(Delete "${item.title}"?)){items=items.filter(i=>i.id!==item.id);save();render()}});
     top.appendChild(titleEl);top.appendChild(del);card.appendChild(top);
 
     if(isUrl){
@@ -434,7 +426,6 @@ function render(){
         const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28);
         const fav=document.createElement("img");fav.className="card-favicon";
         fav.src=`https://www.google.com/s2/favicons?domain=${host}&sz=32`;
-        fav.src=https://www.google.com/s2/favicons?domain=${host}&sz=32;
         fav.onerror=()=>fav.remove();
         link.appendChild(fav);link.appendChild(document.createTextNode(host+(path||"")));
       }catch{link.textContent=item.url.slice(0,40)}
@@ -467,11 +458,12 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=const C="stash-v3";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});;
+  const sw=`const C="stash-v3";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
 render();
 </script>
+
 </body>
 </html>
