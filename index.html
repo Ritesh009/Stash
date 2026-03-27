@@ -100,7 +100,9 @@
 <header>
   <div class="logo"><span>Personal Archive</span>Stash</div>
   <div class="header-actions">
+    <button class="btn btn-ghost" id="importBtn">↑ Import</button>
     <button class="btn btn-ghost" id="exportBtn">↓ Export</button>
+    <input type="file" id="importFile" accept=".json" style="display:none"/>
     <button class="btn btn-primary" id="toggleFormBtn">+ Add</button>
   </div>
 </header>
@@ -169,41 +171,58 @@
 <!-- BOOKMARKLET PAGE -->
 <div class="page" id="page-bookmarklet">
   <div class="bmk-page">
+
     <div class="bmk-section">
-      <div class="bmk-title">Safari Clip Bookmarklet</div>
-      <div class="bmk-body">While browsing any page in Safari, tap the <strong>"Stash It"</strong> bookmark and the page title + URL will be saved to Stash instantly — no typing needed.</div>
+      <div class="bmk-title">Safari Clip</div>
+      <div class="bmk-body">Once set up, you'll have a <strong>"Stash It"</strong> bookmark in Safari. Tap it on any page and the title + URL is instantly saved to Stash.</div>
     </div>
 
     <div class="bmk-section">
-      <div class="bmk-title" style="font-size:15px">Setup (one-time)</div>
-
       <div class="bmk-step">
         <div class="bmk-num">1</div>
-        <div class="bmk-body"><strong>Copy the code below</strong> — tap it to select, then copy.</div>
-      </div>
-      <div class="bmk-code" id="bookmarkletCode"></div>
-      <button class="btn btn-primary" id="copyBookmarklet" style="align-self:flex-start">Copy Code</button>
-
-      <div class="bmk-step">
-        <div class="bmk-num">2</div>
-        <div class="bmk-body">In Safari, bookmark <strong>any page</strong> (Share → Add Bookmark). Name it <strong>"Stash It"</strong>.</div>
-      </div>
-
-      <div class="bmk-step">
-        <div class="bmk-num">3</div>
-        <div class="bmk-body">Open Bookmarks, long-press <strong>"Stash It"</strong> → Edit. <strong>Clear the URL field</strong> and paste the copied code. Save.</div>
-      </div>
-
-      <div class="bmk-step">
-        <div class="bmk-num">4</div>
-        <div class="bmk-body"><strong>Done!</strong> Browse anywhere, open Bookmarks, tap <strong>"Stash It"</strong> — the page is saved.</div>
+        <div style="flex:1">
+          <div class="bmk-body" style="margin-bottom:10px"><strong>Copy this code</strong></div>
+          <div class="bmk-code" id="bookmarkletCode"></div>
+          <button class="btn btn-primary" id="copyBookmarklet" style="margin-top:10px">Copy Code</button>
+        </div>
       </div>
     </div>
 
     <div class="bmk-section">
-      <div class="bmk-title" style="font-size:15px">💡 Pro tip</div>
-      <div class="bmk-body">In Safari Settings → enable <strong>Show Favorites Bar</strong>, then move "Stash It" to Favorites for one-tap clipping while browsing.</div>
+      <div class="bmk-step">
+        <div class="bmk-num">2</div>
+        <div class="bmk-body">
+          In Safari, go to <strong>any website</strong> and tap the <strong>Share button</strong> (↑ box with arrow at the bottom) → tap <strong>"Add Bookmark"</strong> → name it <strong>"Stash It"</strong> → tap <strong>Save</strong>.
+        </div>
+      </div>
     </div>
+
+    <div class="bmk-section">
+      <div class="bmk-step">
+        <div class="bmk-num">3</div>
+        <div class="bmk-body">
+          Open <strong>Bookmarks</strong> in Safari → find <strong>"Stash It"</strong> → swipe left → tap <strong>Edit</strong>.<br><br>
+          In the URL field: <strong>select all → delete → paste</strong> the code from Step 1.<br><br>
+          Tap <strong>Done</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div class="bmk-section">
+      <div class="bmk-step">
+        <div class="bmk-num">4</div>
+        <div class="bmk-body">
+          <strong>Test it —</strong> browse to any page, open Bookmarks, tap <strong>"Stash It"</strong>. You should see <em>"Page stashed ✓"</em> in Stash.
+        </div>
+      </div>
+    </div>
+
+    <div class="bmk-section">
+      <div class="bmk-body">
+        ⚠️ <strong>Note:</strong> Keep Stash open in Safari (not the home screen icon) for clipping to work. Safari and the home screen app store data separately on iOS — this is a known limitation we're working around.
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -235,6 +254,7 @@ document.querySelectorAll(".tab").forEach(tab=>{
     const onItems=tab.dataset.tab==="items";
     toggleBtn.style.display=onItems?"":"none";
     exportBtn.style.display=onItems?"":"none";
+    $("importBtn").style.display=onItems?"":"none";
   });
 });
 
@@ -300,9 +320,35 @@ exportBtn.addEventListener("click",()=>{
   URL.revokeObjectURL(url);showToast("Exported!");
 });
 
+// Import
+$("importBtn").addEventListener("click",()=>$("importFile").click());
+$("importFile").addEventListener("change",function(){
+  const file=this.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(!Array.isArray(imported)){showToast("Invalid file ✕");return;}
+      const valid=imported.filter(i=>i.title&&i.id);
+      if(!valid.length){showToast("No valid items found ✕");return;}
+      // merge — skip duplicates by id
+      const existingIds=new Set(items.map(i=>i.id));
+      const newItems=valid.filter(i=>!existingIds.has(i.id));
+      const dupes=valid.length-newItems.length;
+      items=[...newItems,...items];
+      save();render();
+      const msg=dupes>0?Imported ${newItems.length} items (${dupes} skipped):Imported ${newItems.length} items ✓;
+      showToast(msg);
+    }catch{showToast("Couldn't read file ✕");}
+    $("importFile").value="";
+  };
+  reader.readAsText(file);
+});
+
 // Bookmarklet
 function buildBookmarklet(){
-  const code=`javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();`;
+  const code=javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();;
   $("bookmarkletCode").textContent=code;
 }
 buildBookmarklet();
@@ -348,10 +394,10 @@ function render(){
   else if(srt==="za")result.sort((a,b)=>b.title.localeCompare(a.title));
   else result.sort((a,b)=>b.createdAt-a.createdAt);
 
-  countLabel.textContent=`${result.length} / ${items.length} item${items.length!==1?"s":""}`;
+  countLabel.textContent=${result.length} / ${items.length} item${items.length!==1?"s":""};
 
   if(!result.length){
-    itemList.innerHTML=`<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match your search."}</div>`;
+    itemList.innerHTML=<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match your search."}</div>;
     return;
   }
 
@@ -362,7 +408,7 @@ function render(){
     const top=document.createElement("div");top.className="card-top";
     const titleEl=document.createElement("div");titleEl.className="card-title";titleEl.textContent=item.title;
     const del=document.createElement("button");del.className="delete-btn";del.innerHTML="✕";
-    del.addEventListener("click",()=>{if(confirm(`Delete "${item.title}"?`)){items=items.filter(i=>i.id!==item.id);save();render()}});
+    del.addEventListener("click",()=>{if(confirm(Delete "${item.title}"?)){items=items.filter(i=>i.id!==item.id);save();render()}});
     top.appendChild(titleEl);top.appendChild(del);card.appendChild(top);
 
     if(isUrl){
@@ -371,7 +417,7 @@ function render(){
         const host=new URL(item.url).hostname;
         const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28);
         const fav=document.createElement("img");fav.className="card-favicon";
-        fav.src=`https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+        fav.src=https://www.google.com/s2/favicons?domain=${host}&sz=32;
         fav.onerror=()=>fav.remove();
         link.appendChild(fav);link.appendChild(document.createTextNode(host+(path||"")));
       }catch{link.textContent=item.url.slice(0,40)}
@@ -404,7 +450,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=const C="stash-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
