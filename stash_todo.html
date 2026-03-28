@@ -384,6 +384,11 @@ const DEFAULT_TODOS = [
   { id: 6, text: "iOS Shortcuts integration — native share sheet clipping", done: false, cat: "build" },
   { id: 7, text: "Page thumbnail / screenshot preview on URL cards", done: false, cat: "build" },
 
+  // ── To Build — UX Polish ──
+  { id: 53, text: "Tag suggestions — show existing tags as tappable pills when editing, allow adding new ones", done: false, cat: "build" },
+  { id: 54, text: "iOS Shortcuts integration — fix Name source to Safari Web Page, Shortcut Input type to URL", done: false, cat: "fix" },
+  { id: 55, text: "Strip literal brackets from Shortcuts title/url params", done: true, cat: "fix" },
+
   // ── To Build — Security ──
   { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
   { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
@@ -398,10 +403,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v8") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v9") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v8", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v9", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
