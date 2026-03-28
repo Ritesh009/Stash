@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -121,18 +121,56 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 .toast{position:fixed;bottom:calc(22px + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--accent);color:#0d0d0f;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
 .toast.show{opacity:1}
 
+/* Edit sheet */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.sheet-overlay.show{display:block}
+.edit-sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:#18181c;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px calc(24px + var(--safe-bot));display:none;flex-direction:column;gap:13px;animation:sheetUp .25s ease}
+.edit-sheet.show{display:flex}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--dim);border-radius:4px;margin:0 auto -4px}
+.sheet-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:5px;display:block}
+.sheet-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:15px;font-family:-apple-system,sans-serif;outline:none;-webkit-appearance:none}
+.sheet-input::placeholder{color:var(--muted)}
+.sheet-input:focus{border-color:var(--dim)}
+.sheet-row{display:flex;gap:8px}
+.sheet-save{flex:1;background:var(--accent);color:#0d0d0f;border:none;height:42px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif}
+.sheet-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0 16px;height:42px;border-radius:8px;font-size:13px;cursor:pointer;font-family:-apple-system,sans-serif}
+
 /* Backup banner */
 .backup-banner{display:none;background:#1a2e10;border-bottom:1px solid #2d4a1a;padding:11px 16px;gap:10px;align-items:center}
 .backup-banner.show{display:flex}
 .backup-banner-text{flex:1;font-size:13px;color:#8fcc6a;line-height:1.4}
 .backup-banner-text strong{color:#aee08a}
-.backup-btn{background:#2d5016;border:none;color:#aee08a;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.backup-btn{background:#2d5016;border:none;color:#aee08a;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:-apple-system,sans-serif;white-space:nowrap}
 .backup-dismiss{background:none;border:none;color:#4a6a2a;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
 ```
 
   </style>
 </head>
 <body>
+
+<!-- Edit sheet -->
+
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="edit-sheet" id="editSheet">
+  <div class="sheet-handle"></div>
+  <div>
+    <span class="sheet-label">Title</span>
+    <input class="sheet-input" id="editTitle" type="text" placeholder="Title"/>
+  </div>
+  <div>
+    <span class="sheet-label">Tags <span style="text-transform:none;letter-spacing:0;font-weight:300">(comma separated)</span></span>
+    <input class="sheet-input" id="editTags" type="text" placeholder="e.g. movies, work, later"/>
+  </div>
+  <div>
+    <span class="sheet-label">Description</span>
+    <textarea class="sheet-input" id="editDesc" rows="2" placeholder="Optional notes…" style="resize:none;line-height:1.5"></textarea>
+  </div>
+  <div class="sheet-row">
+    <button class="sheet-cancel" id="editCancel">Cancel</button>
+    <button class="sheet-save" id="editSave">Save Changes</button>
+  </div>
+</div>
 
 <div style="position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 12px) 16px 12px;display:flex;display:-webkit-flex;flex-direction:row;-webkit-flex-direction:row;align-items:center;-webkit-align-items:center;justify-content:space-between;-webkit-justify-content:space-between;gap:8px;width:100%">
   <div style="flex-shrink:0;-webkit-flex-shrink:0">
@@ -389,22 +427,48 @@ function addItem(o){
 }
 function tryHostname(url){try{return new URL(url).hostname}catch{return url.slice(0,40)}}
 
-// Incoming clip
+// Incoming clip — save immediately, redirect back
 (function(){
   const p=new URLSearchParams(location.search);
   const t=p.get("t"),u=p.get("u");
   if(t||u){
-    addItem({title:decodeURIComponent(t||""),url:decodeURIComponent(u||""),type:"url",tags:"",description:""});
     history.replaceState({},"",location.pathname);
+    const title=decodeURIComponent(t||"");
+    const url=decodeURIComponent(u||"");
+    addItem({title,url,type:"url",tags:"",description:""});
     showToast("Page stashed ✓");
-    // Go back to the page that was stashed
-    setTimeout(()=>{
-      const returnUrl=decodeURIComponent(u||"");
-      if(returnUrl&&returnUrl.startsWith("http")){window.location.href=returnUrl}
-      else{history.back()}
-    },1200);
+    setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1200);
   }
 })();
+
+// Edit sheet
+let editingId=null;
+function openEdit(item){
+  editingId=item.id;
+  $("editTitle").value=item.title;
+  $("editTags").value=item.tags.join(", ");
+  $("editDesc").value=item.description||"";
+  $("editSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+  setTimeout(()=>$("editTags").focus(),300);
+}
+function closeEdit(){
+  $("editSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  editingId=null;
+}
+$("editSave").addEventListener("click",()=>{
+  if(!editingId)return;
+  const title=$("editTitle").value.trim();
+  if(!title)return;
+  const tags=$("editTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const description=$("editDesc").value.trim();
+  items=items.map(i=>i.id===editingId?{...i,title,tags,description}:i);
+  save();render();closeEdit();
+  showToast("Saved ✓");
+});
+$("editCancel").addEventListener("click",closeEdit);
+$("sheetOverlay").addEventListener("click",closeEdit);
 
 $("searchInput").addEventListener("input",render);
 $("sortSelect").addEventListener("change",render);
@@ -526,6 +590,8 @@ function render(){
 
     const top=document.createElement("div");top.className="card-top";
     const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
+    ti.style.cursor="pointer";
+    ti.addEventListener("click",()=>openEdit(item));
     const dl=document.createElement("button");dl.className="del-btn";dl.innerHTML="✕";
     dl.addEventListener("click",()=>{if(confirm(`Delete "${dt}"?`)){items=items.filter(i=>i.id!==item.id);save();render()}});
     top.appendChild(ti);top.appendChild(dl);card.appendChild(top);
@@ -571,7 +637,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v19";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v21";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
