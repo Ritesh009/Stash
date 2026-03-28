@@ -74,18 +74,29 @@ You can also manually export anytime via **Share → Export**.
 
 -----
 
-## 🛠 Self-Hosting
+## 🚀 Using Stash
 
-Stash is a single HTML file. No build step, no dependencies.
+**Option 1 — Use the hosted version (easiest)**
+Just open this URL in Safari on your iPhone — no setup needed:
 
-1. Download `index.html`
-1. Host it anywhere — [GitHub Pages](https://pages.github.com), [Netlify Drop](https://app.netlify.com/drop), or any static host
-1. Open the URL in Safari on your iPhone
+```
+https://ritesh009.github.io/Stash/
+```
 
-**GitHub Pages (recommended):**
+Add it to your home screen and you’re done. Free, no account required.
 
-- Create a repo, upload `index.html`, enable Pages under Settings → Pages
-- Your app will be live at `https://YOUR-USERNAME.github.io/REPO-NAME/`
+**Option 2 — Host it yourself on GitHub Pages (also free)**
+If you want your own copy at your own URL:
+
+1. [Fork this repo](https://github.com/ritesh009/Stash/fork) on GitHub
+1. Go to your forked repo → **Settings → Pages**
+1. Under **Source**, select **Deploy from a branch → main → / (root)**
+1. Click **Save**
+1. Your Stash will be live at `https://YOUR-USERNAME.github.io/Stash/`
+
+That’s it — completely free, no domain purchase needed, no server to maintain.
+
+> Both options are free. The only difference is Option 2 gives you your own private URL and full control over the code.
 
 -----
 
