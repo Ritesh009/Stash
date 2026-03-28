@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Todo"/>
+  <meta name="theme-color" content="#F7F4EF"/>
+  <title>Todo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #F7F4EF;
+      --surface: #EFEAE2;
+      --border: #DDD8CF;
+      --text: #1a1814;
+      --muted: #9C9688;
+      --done: #B8B2A8;
+      --accent: #2D5016;
+      --accent-light: #4a7c2a;
+      --danger: #C0392B;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+```
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+header {
+  padding: calc(var(--safe-top) + 32px) 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+h1 {
+  font-family: 'Lora', serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+}
+
+.progress-wrap {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.progress-label {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+/* Filter tabs */
+.filters {
+  display: flex;
+  gap: 0;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+  border: none;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Add input */
+.add-wrap {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  -webkit-appearance: none;
+}
+.add-input::placeholder { color: var(--muted); }
+.add-input:focus { border-color: var(--accent); }
+
+.add-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+.add-btn:active { opacity: 0.8; }
+
+/* List */
+.list {
+  padding: 12px 24px;
+  padding-bottom: calc(32px + var(--safe-bot));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  font-style: italic;
+  padding: 60px 20px;
+  font-family: 'Lora', serif;
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  animation: itemIn 0.2s ease;
+  position: relative;
+}
+.todo-item:last-child { border-bottom: none; }
+
+@keyframes itemIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.check-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.check-btn.done {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.check-btn.done::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  display: block;
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  transition: all 0.2s;
+  word-break: break-word;
+}
+.todo-text.done {
+  color: var(--done);
+  text-decoration: line-through;
+  text-decoration-color: var(--border);
+}
+
+.category-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.del-btn {
+  background: none;
+  border: none;
+  color: var(--border);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  margin-top: 2px;
+}
+.del-btn:active { color: var(--danger); }
+
+/* Section headers */
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 16px 0 6px;
+}
+
+.clear-done {
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.clear-done:active { color: var(--danger); }
+```
+
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Stash Tasks</h1>
+      <div class="subtitle" id="dateLabel"></div>
+    </div>
+    <button class="clear-done" id="clearDoneBtn">Clear done</button>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="fix">🔧 Fix</button>
+  <button class="filter-btn" data-filter="build">🏗️ Build</button>
+  <button class="filter-btn" data-filter="idea">💡 Idea</button>
+  <button class="filter-btn" data-filter="done">✅ Done</button>
+</div>
+
+<div class="add-wrap">
+  <input class="add-input" id="addInput" type="text" placeholder="Add a task…" />
+  <button class="add-btn" id="addBtn">+</button>
+</div>
+
+<div class="list" id="todoList"></div>
+
+<script>
+const CATEGORY_COLORS = {
+  fix:   { bg: '#FFF0EE', color: '#C0392B', label: '🔧 Fix' },
+  build: { bg: '#EEF4FF', color: '#2C5BB4', label: '🏗️ Build' },
+  idea:  { bg: '#F0FFF4', color: '#2D5016', label: '💡 Idea' },
+  none:  { bg: '#F0EDE8', color: '#6b6b74', label: '' },
+};
+
+const DEFAULT_TODOS = [
+  // ── Active Fixes ──
+  { id: 1, text: "Fix Safari clipper → home screen sync problem", done: false, cat: "fix" },
+
+  // ── Completed Fixes ──
+  { id: 15, text: "Fix header layout — Share & Add buttons always on same row", done: true, cat: "fix" },
+  { id: 16, text: "Strip '- Google Search' noise from saved titles", done: true, cat: "fix" },
+  { id: 17, text: "Fix iOS Safari flexbox bug — replaced header tag with div", done: true, cat: "fix" },
+  { id: 25, text: "After stashing, auto-redirect back to original page", done: true, cat: "fix" },
+  { id: 26, text: "Fix service worker caching old broken versions", done: true, cat: "fix" },
+  { id: 37, text: "Remove Google Favicon API — use DuckDuckGo instead (privacy)", done: true, cat: "fix" },
+  { id: 38, text: "Embed Google Fonts locally — no external font calls", done: true, cat: "fix" },
+
+  // ── Completed Builds ──
+  { id: 18, text: "Group cards by date — Today, Yesterday, This Week", done: true, cat: "build" },
+  { id: 19, text: "Swipe left to delete cards", done: true, cat: "build" },
+  { id: 20, text: "Bigger favicons with host + path on URL cards", done: true, cat: "build" },
+  { id: 21, text: "Import items from JSON file", done: true, cat: "build" },
+  { id: 22, text: "Share menu — Import & Export in dropdown", done: true, cat: "build" },
+  { id: 23, text: "Responsive layout — 2 col tablet, 3 col desktop", done: true, cat: "build" },
+  { id: 24, text: "Safari Clip page redesign — cleaner step-by-step UI", done: true, cat: "build" },
+  { id: 27, text: "Note + Web Page item types with URL field", done: true, cat: "build" },
+  { id: 28, text: "Tag filtering with color-coded pills", done: true, cat: "build" },
+  { id: 29, text: "Sort by newest, oldest, A-Z, Z-A", done: true, cat: "build" },
+  { id: 30, text: "Filter by item type (notes vs web pages)", done: true, cat: "build" },
+  { id: 31, text: "PWA — installable on iPhone via Safari Add to Home Screen", done: true, cat: "build" },
+  { id: 32, text: "Offline support via service worker", done: true, cat: "build" },
+  { id: 39, text: "Local backup system — shadow copy + 24hr prompt to save to Files", done: true, cat: "build" },
+  { id: 40, text: "Auto-restore from shadow backup if main data wiped by iOS", done: true, cat: "build" },
+
+  // ── To Build — Core ──
+  { id: 2, text: "Add Settings screen", done: false, cat: "build" },
+  { id: 3, text: "Firebase sync — user brings their own account", done: false, cat: "build" },
+  { id: 4, text: "Paste Firebase config in Settings to enable sync", done: false, cat: "build" },
+  { id: 5, text: "Once synced, Safari clipper works with home screen app", done: false, cat: "build" },
+  { id: 43, text: "Duplicate detection on new items — merge, replace, keep both or cancel", done: true, cat: "build" },
+  { id: 44, text: "Find & resolve existing duplicates scanner (deferred)", done: false, cat: "build" },
+  { id: 50, text: "Fix duplicate sheet — pause redirect until user resolves duplicate", done: true, cat: "fix" },
+  { id: 51, text: "Edit existing items — tap card title to open edit sheet", done: true, cat: "build" },
+  { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
+  { id: 9, text: "Bulk delete", done: false, cat: "build" },
+  { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
+  { id: 11, text: "Image / screenshot saving", done: false, cat: "build" },
+
+  // ── To Build — Import/Export ──
+  { id: 45, text: "Multi-format importer — auto-detect JSON, CSV, HTML, MD", done: false, cat: "build" },
+  { id: 46, text: "Import from Raindrop.io — JSON and CSV export formats", done: false, cat: "build" },
+  { id: 47, text: "Import from browser bookmarks — HTML format (Chrome, Safari, Firefox)", done: false, cat: "build" },
+  { id: 48, text: "Import from Obsidian — parse .md files, extract title, body, frontmatter tags", done: false, cat: "build" },
+  { id: 49, text: "Import from Pocket — HTML export format", done: false, cat: "build" },
+  { id: 6, text: "iOS Shortcuts integration — native share sheet clipping", done: false, cat: "build" },
+  { id: 7, text: "Page thumbnail / screenshot preview on URL cards", done: false, cat: "build" },
+
+  // ── To Build — Security ──
+  { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
+  { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
+
+  // ── Ideas ──
+  { id: 12, text: "Optional AI tagging — user brings their own API key", done: false, cat: "idea" },
+  { id: 13, text: "Smart search by meaning (semantic search)", done: false, cat: "idea" },
+  { id: 14, text: "Auto-summary of saved web pages", done: false, cat: "idea" },
+  { id: 33, text: "iOS 7-day localStorage expiry warning — nudge users to export", done: false, cat: "idea" },
+  { id: 34, text: "Read-only shareable link for a tag or collection", done: false, cat: "idea" },
+  { id: 35, text: "Market positioning — 'free private Obsidian for saving, not writing'", done: false, cat: "idea" },
+  { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
+];
+
+let todos = JSON.parse(localStorage.getItem("stash_todos_v8") || "null");
+if (!todos) { todos = DEFAULT_TODOS; save(); }
+let filter = "all";
+function save() { localStorage.setItem("stash_todos_v8", JSON.stringify(todos)); }
+
+// Date
+document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
+
+// Filter buttons
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    filter = btn.dataset.filter;
+    render();
+  });
+});
+
+// Add
+document.getElementById("addBtn").addEventListener("click", addTodo);
+document.getElementById("addInput").addEventListener("keydown", e => { if (e.key === "Enter") addTodo(); });
+
+function addTodo() {
+  const input = document.getElementById("addInput");
+  const text = input.value.trim();
+  if (!text) return;
+  // detect category from text
+  let cat = "none";
+  if (/fix|bug|broken|error|problem/i.test(text)) cat = "fix";
+  else if (/build|add|create|implement|make/i.test(text)) cat = "build";
+  else if (/idea|maybe|consider|optional|could/i.test(text)) cat = "idea";
+  todos.unshift({ id: Date.now(), text, done: false, cat });
+  save(); input.value = ""; render();
+}
+
+// Clear done
+document.getElementById("clearDoneBtn").addEventListener("click", () => {
+  if (todos.filter(t => t.done).length === 0) return;
+  if (confirm("Remove all completed tasks?")) { todos = todos.filter(t => !t.done); save(); render(); }
+});
+
+function render() {
+  const list = document.getElementById("todoList");
+  const fill = document.getElementById("progressFill");
+  const label = document.getElementById("progressLabel");
+
+  const total = todos.length;
+  const done = todos.filter(t => t.done).length;
+  fill.style.width = total ? (done/total*100)+"%" : "0%";
+  label.textContent = `${done} / ${total}`;
+
+  let visible = [...todos];
+  if (filter === "done") visible = visible.filter(t => t.done);
+  else if (filter !== "all") visible = visible.filter(t => t.cat === filter && !t.done);
+  else visible = visible.filter(t => !t.done); // "all" shows pending only (done shown in done tab)
+
+  if (filter === "all") {
+    // group by category
+    const order = ["fix","build","idea","none"];
+    const groups = {};
+    order.forEach(c => groups[c] = visible.filter(t => t.cat === c));
+
+    list.innerHTML = "";
+    let any = false;
+    order.forEach(cat => {
+      if (!groups[cat].length) return;
+      any = true;
+      const sec = document.createElement("div");
+      sec.className = "section-label";
+      sec.textContent = CATEGORY_COLORS[cat].label || "Other";
+      list.appendChild(sec);
+      groups[cat].forEach(t => list.appendChild(makeCard(t)));
+    });
+    if (!any) list.innerHTML = `<div class="empty">All done — nothing pending ✓</div>`;
+  } else {
+    list.innerHTML = "";
+    if (!visible.length) {
+      list.innerHTML = `<div class="empty">Nothing here yet</div>`;
+    } else {
+      visible.forEach(t => list.appendChild(makeCard(t)));
+    }
+  }
+}
+
+function makeCard(todo) {
+  const item = document.createElement("div");
+  item.className = "todo-item";
+
+  const check = document.createElement("button");
+  check.className = "check-btn" + (todo.done ? " done" : "");
+  check.addEventListener("click", () => {
+    todo.done = !todo.done; save(); render();
+  });
+
+  const text = document.createElement("div");
+  text.className = "todo-text" + (todo.done ? " done" : "");
+  text.textContent = todo.text;
+
+  const cat = CATEGORY_COLORS[todo.cat] || CATEGORY_COLORS.none;
+  const del = document.createElement("button");
+  del.className = "del-btn"; del.innerHTML = "✕";
+  del.addEventListener("click", () => {
+    todos = todos.filter(t => t.id !== todo.id); save(); render();
+  });
+
+  if (todo.cat !== "none" && cat.label) {
+    const badge = document.createElement("span");
+    badge.className = "category-badge";
+    badge.textContent = cat.label;
+    badge.style.background = cat.bg;
+    badge.style.color = cat.color;
+    item.appendChild(check);
+    item.appendChild(text);
+    item.appendChild(badge);
+    item.appendChild(del);
+  } else {
+    item.appendChild(check);
+    item.appendChild(text);
+    item.appendChild(del);
+  }
+
+  return item;
+}
+
+render();
+</script>
+
+</body>
+</html>
