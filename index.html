@@ -119,6 +119,14 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
 .toast{position:fixed;bottom:calc(22px + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--accent);color:#0d0d0f;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
 .toast.show{opacity:1}
+
+/* Backup banner */
+.backup-banner{display:none;background:#1a2e10;border-bottom:1px solid #2d4a1a;padding:11px 16px;gap:10px;align-items:center}
+.backup-banner.show{display:flex}
+.backup-banner-text{flex:1;font-size:13px;color:#8fcc6a;line-height:1.4}
+.backup-banner-text strong{color:#aee08a}
+.backup-btn{background:#2d5016;border:none;color:#aee08a;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.backup-dismiss{background:none;border:none;color:#4a6a2a;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
 ```
 
   </style>
@@ -146,6 +154,16 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 <div class="tabs">
   <button class="tab active" data-tab="items">📦 Items</button>
   <button class="tab" data-tab="clip">🔖 Safari Clip</button>
+</div>
+
+<!-- Backup banner -->
+
+<div class="backup-banner" id="backupBanner">
+  <div class="backup-banner-text">
+    <strong>Daily backup due</strong> — Save your data to Files to prevent loss.
+  </div>
+  <button class="backup-btn" id="backupNowBtn">Save to Files</button>
+  <button class="backup-dismiss" id="backupDismissBtn">✕</button>
 </div>
 
 <!-- ITEMS PAGE -->
@@ -257,7 +275,61 @@ const $=id=>document.getElementById(id);
 
 let items=JSON.parse(localStorage.getItem("stash_items")||"[]");
 let filterTag=null,formOpen=false,itemType="note";
-function save(){localStorage.setItem("stash_items",JSON.stringify(items))}
+
+// ── Backup system ──
+const BACKUP_KEY="stash_backup";
+const BACKUP_TIME_KEY="stash_last_backup";
+const BACKUP_INTERVAL=24*60*60*1000; // 24 hours
+
+function save(){
+  localStorage.setItem("stash_items",JSON.stringify(items));
+  // Layer 1: always keep a shadow backup
+  localStorage.setItem(BACKUP_KEY,JSON.stringify({items,savedAt:Date.now()}));
+}
+
+function checkAndRestoreBackup(){
+  // If main data is empty but backup exists, restore silently
+  if(items.length===0){
+    try{
+      const backup=JSON.parse(localStorage.getItem(BACKUP_KEY)||"null");
+      if(backup&&backup.items&&backup.items.length>0){
+        items=backup.items;
+        localStorage.setItem("stash_items",JSON.stringify(items));
+        showToast(`Restored ${items.length} items from backup ✓`);
+      }
+    }catch(e){}
+  }
+}
+
+function checkBackupPrompt(){
+  if(items.length===0)return;
+  const last=parseInt(localStorage.getItem(BACKUP_TIME_KEY)||"0");
+  const due=Date.now()-last>BACKUP_INTERVAL;
+  if(due){$("backupBanner").classList.add("show")}
+}
+
+function saveToFiles(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+  const date=new Date().toISOString().slice(0,10);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`stash-backup-${date}.json`;
+  a.click();
+  localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
+  $("backupBanner").classList.remove("show");
+  showToast("Backup saved to Files ✓");
+}
+
+$("backupNowBtn").addEventListener("click",saveToFiles);
+$("backupDismissBtn").addEventListener("click",()=>{
+  // Dismiss for now but remind again in 24hrs
+  localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
+  $("backupBanner").classList.remove("show");
+});
+
+// Run on load
+checkAndRestoreBackup();
+checkBackupPrompt();
 
 // Tabs
 document.querySelectorAll(".tab").forEach(tab=>{
@@ -498,7 +570,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v17";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v18";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
