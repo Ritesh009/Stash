@@ -101,25 +101,27 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 .page.active{display:block}
 
 /* ── Responsive ── */
+/* Centered content wrapper for wide screens */
+.app-wrap{width:100%;max-width:1100px;margin:0 auto}
+
 @media(min-width:600px){
+  html,body{background:#060608}
+  .app-wrap{background:var(--bg);min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
   header{padding:20px 40px 16px}
   .logo{font-size:30px}
   .tabs{padding:0 40px}
   .tab{flex:none;padding:13px 24px}
   .controls{padding:16px 40px 12px}
   .tag-bar{padding:10px 40px}
-  .list{padding:16px 40px;padding-bottom:calc(40px + var(--safe-bot));display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .list{padding:16px 40px;padding-bottom:calc(40px + var(--safe-bot));display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   .date-group-label{grid-column:1/-1}
   .form-panel{padding:20px 40px}
-  .bmk-page{padding:24px 40px;padding-bottom:60px;max-width:640px;margin:0 auto}
+  .bmk-page{padding:24px 40px;padding-bottom:60px;max-width:640px}
 }
 
 @media(min-width:960px){
-  body{max-width:1100px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border);min-height:100vh}
   .list{grid-template-columns:1fr 1fr 1fr}
-  .tabs{padding:0 40px}
   .logo{font-size:32px}
-  header{padding:20px 40px 16px}
 }
 
 .bmk-page{padding:20px;padding-bottom:calc(40px + var(--safe-bot));display:flex;flex-direction:column;gap:12px}
@@ -148,6 +150,7 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   </style>
 </head>
 <body>
+<div class="app-wrap">
 
 <header>
   <div class="logo"><span>Personal Archive</span>Stash</div>
@@ -315,6 +318,8 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
   </div>
 </div>
+
+</div><!-- /app-wrap -->
 
 <div class="toast" id="toast"></div>
 
@@ -603,7 +608,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v7";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v8";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
