@@ -323,7 +323,12 @@ function tryHostname(url){try{return new URL(url).hostname}catch{return url.slic
   if(t||u){
     addItem({title:decodeURIComponent(t||""),url:decodeURIComponent(u||""),type:"url",tags:"",description:""});
     history.replaceState({},"",location.pathname);
+    // Show confirmation then go back to the page the user was on
     showToast("Page stashed ✓");
+    setTimeout(()=>{
+      if(document.referrer){window.location.href=document.referrer}
+      else{history.back()}
+    },1200);
   }
 })();
 
@@ -359,7 +364,7 @@ $("importFile").addEventListener("change",function(){
 });
 
 // Bookmarklet
-$("clipCode").textContent=`javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();`;
+$("clipCode").textContent=`javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);location.replace('${STASH_URL}?t='+t+'&u='+u);})();`;
 $("copyBtn").addEventListener("click",()=>{
   const code=$("clipCode").textContent;
   if(navigator.clipboard){navigator.clipboard.writeText(code).then(()=>showToast("Copied!")).catch(fb)}else fb();
@@ -492,7 +497,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v15";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v16";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
