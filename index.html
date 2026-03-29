@@ -162,6 +162,12 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 .backup-banner-text strong{color:#aee08a}
 .backup-btn{background:#2d5016;border:none;color:#aee08a;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:-apple-system,sans-serif;white-space:nowrap}
 .backup-dismiss{background:none;border:none;color:#4a6a2a;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
+
+/* Tag suggestions */
+.tag-suggestions{display:flex;flex-wrap:wrap;gap:7px;min-height:10px}
+.tag-suggestion{border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 12px;border-radius:20px;font-size:11px;font-family:-apple-system,sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tag-suggestion.selected{color:#0d0d0f;border-color:transparent}
+.tag-suggestions-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px;display:block}
 ```
 
   </style>
@@ -179,7 +185,11 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   </div>
   <div>
     <span class="sheet-label">Tags <span style="text-transform:none;letter-spacing:0;font-weight:300">(comma separated)</span></span>
-    <input class="sheet-input" id="editTags" type="text" placeholder="e.g. movies, work, later"/>
+    <input class="sheet-input" id="editTags" type="text" placeholder="Type a new tag…"/>
+    <div style="margin-top:10px">
+      <span class="tag-suggestions-label">Your tags — tap to toggle</span>
+      <div class="tag-suggestions" id="tagSuggestions"></div>
+    </div>
   </div>
   <div>
     <span class="sheet-label">Description</span>
@@ -557,14 +567,43 @@ $("dupCancel").addEventListener("click",closeDupSheet);
 
 // Edit sheet
 let editingId=null;
+let selectedTags=new Set();
+
 function openEdit(item){
   editingId=item.id;
   $("editTitle").value=item.title;
-  $("editTags").value=item.tags.join(", ");
   $("editDesc").value=item.description||"";
+  selectedTags=new Set(item.tags);
+  $("editTags").value="";
+  renderTagSuggestions();
   $("editSheet").classList.add("show");
   $("sheetOverlay").classList.add("show");
-  setTimeout(()=>$("editTags").focus(),300);
+}
+
+function renderTagSuggestions(){
+  const container=$("tagSuggestions");
+  container.innerHTML="";
+  // All unique tags across all items
+  const allTags=[...new Set(items.flatMap(i=>i.tags))].sort();
+  if(!allTags.length){
+    container.style.display="none";return;
+  }
+  container.style.display="flex";
+  allTags.forEach(tag=>{
+    const btn=document.createElement("button");
+    btn.className="tag-suggestion"+(selectedTags.has(tag)?" selected":"");
+    btn.textContent=(selectedTags.has(tag)?"✓ ":"")+tag;
+    const c=hashColor(tag);
+    btn.style.borderColor=selectedTags.has(tag)?"transparent":c+"66";
+    btn.style.color=selectedTags.has(tag)?"#0d0d0f":c;
+    if(selectedTags.has(tag))btn.style.background=c;
+    btn.addEventListener("click",()=>{
+      if(selectedTags.has(tag))selectedTags.delete(tag);
+      else selectedTags.add(tag);
+      renderTagSuggestions();
+    });
+    container.appendChild(btn);
+  });
 }
 function closeEdit(){
   $("editSheet").classList.remove("show");
@@ -575,7 +614,9 @@ $("editSave").addEventListener("click",()=>{
   if(!editingId)return;
   const title=$("editTitle").value.trim();
   if(!title)return;
-  const tags=$("editTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  // Merge selected tags (pills) with any newly typed tags
+  const typedTags=$("editTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const tags=[...new Set([...selectedTags,...typedTags])];
   const description=$("editDesc").value.trim();
   items=items.map(i=>i.id===editingId?{...i,title,tags,description}:i);
   save();render();closeEdit();
@@ -760,7 +801,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v26";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v27";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
