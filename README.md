@@ -54,6 +54,53 @@ Stash will appear as an app icon on your home screen and open fullscreen.
 
 -----
 
+## 🤖 Install on Android
+
+1. Open your Stash URL in **Chrome**
+1. Tap the **three dot menu** (⋮) at the top right
+1. Tap **“Add to Home Screen”**
+1. Tap **Add**
+
+Stash installs as a PWA and opens fullscreen just like a native app.
+
+**Web Clip on Android:**
+The bookmarklet works in Chrome on Android too. Follow the same Safari Clip setup steps but in Chrome — add a bookmark, edit it, paste the code.
+
+-----
+
+## 💻 Use on Desktop
+
+Just open your Stash URL in any browser — Chrome, Firefox, Safari, Edge. No install needed.
+
+To save pages quickly on desktop, the bookmarklet works in every browser:
+
+1. Go to the **🔖 Safari Clip** tab inside Stash
+1. Copy the code
+1. Create a new bookmark in your browser
+1. Replace the URL with the copied code
+1. Name it **“Stash It”** and save it to your bookmarks bar
+
+Now one click saves any page to Stash from your desktop browser.
+
+-----
+
+## 🌐 Browser Support
+
+|Browser          |Use Stash|Install as App|Web Clip|
+|-----------------|---------|--------------|--------|
+|Safari (iPhone)  |✅        |✅ Best        |✅       |
+|Chrome (Android) |✅        |✅             |✅       |
+|Chrome (desktop) |✅        |✅             |✅       |
+|Firefox (desktop)|✅        |✅             |✅       |
+|Safari (Mac)     |✅        |✅             |✅       |
+|Edge (desktop)   |✅        |✅             |✅       |
+|Chrome (iPhone)  |✅        |⚠️ Limited     |✅       |
+
+
+> ⚠️ Chrome on iPhone can open Stash fine but Apple restricts PWA installs to Safari only on iOS.
+
+-----
+
 ## 🔖 Safari Clip Setup
 
 Safari Clip lets you save any page to Stash with one tap while browsing.
