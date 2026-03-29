@@ -169,11 +169,24 @@ That’s it — completely free, no domain purchase needed, no server to maintai
 |Daily backup prompts                                       |✅ Done   |
 |Privacy — no Google fonts or favicons                      |✅ Done   |
 |Responsive layout (mobile, tablet, desktop)                |✅ Done   |
-|Firebase sync (bring your own account)                     |🔜 Planned|
 |Multi-format import (browser bookmarks, Raindrop, Obsidian)|🔜 Planned|
 |Optional AI tagging (bring your own API key)               |💡 Idea   |
 |Optional PIN lock                                          |💡 Idea   |
 |Find & resolve existing duplicates                         |💡 Idea   |
+|App icon                                                   |💡 Idea   |
+
+-----
+
+## 🔄 Why no cloud sync?
+
+Stash is intentionally local-first. We explored adding Firebase sync but decided against it — Firebase is a Google product, which contradicts Stash’s privacy-first philosophy.
+
+The iOS platform also makes true private sync without a server technically impossible — Apple sandboxes the home screen PWA and Safari as completely separate storage contexts with no way to bridge them without a third-party server.
+
+**The recommended approach:**
+Use Stash in **Safari** (not the home screen icon) for the best experience. Stash Clip works there, data persists reliably, and the daily backup prompt keeps you safe.
+
+To move data between devices manually, use **Share → Export** on one device and **Share → Import** on the other.
 
 -----
 
