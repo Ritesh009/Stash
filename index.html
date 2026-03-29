@@ -82,7 +82,9 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 .edit-bg{position:absolute;left:0;top:0;bottom:0;width:88px;background:#2a5298;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
 .card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:5px;animation:cardIn .18s ease;-webkit-transition:transform .25s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.card-title{font-family:Georgia,serif;font-size:15px;color:var(--accent);line-height:1.3;font-weight:600}
+.card-top-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;gap:8px;min-width:0}
+.card-title{font-family:Georgia,serif;font-size:15px;color:var(--accent);line-height:1.3;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-tags-inline{display:-webkit-flex;display:flex;gap:4px;-webkit-flex-shrink:0;flex-shrink:0;flex-wrap:nowrap;max-width:45%;overflow:hidden}
 .card-desc{font-size:12px;color:var(--muted);line-height:1.5}
 .card-tags{display:-webkit-flex;display:flex;gap:5px;flex-wrap:wrap;margin-top:1px}
 .card-tag{font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.03em;cursor:pointer;border:1px solid transparent;line-height:1.6}
@@ -738,18 +740,44 @@ function render(){
     const card=document.createElement("div");card.className="card";
     const dt=cleanTitle(item.title);
 
-    // Title
+    // Title + tags inline on same row
+    const topRow=document.createElement("div");topRow.className="card-top-row";
     const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
-    card.appendChild(ti);
+    topRow.appendChild(ti);
+    if(item.tags.length){
+      const tg=document.createElement("div");tg.className="card-tags-inline";
+      item.tags.slice(0,2).forEach(tag=>{
+        const t=document.createElement("span");t.className="card-tag";t.textContent=tag;
+        const c=hashColor(tag);t.style.background=c+"18";t.style.borderColor=c+"44";t.style.color=c;
+        t.addEventListener("click",e=>{e.stopPropagation();filterTag=filterTag===tag?null:tag;render()});
+        tg.appendChild(t);
+      });
+      if(item.tags.length>2){
+        const more=document.createElement("span");more.className="card-tag";
+        more.textContent=`+${item.tags.length-2}`;
+        more.style.background="var(--surface)";more.style.borderColor="var(--border)";more.style.color="var(--muted)";
+        tg.appendChild(more);
+      }
+      topRow.appendChild(tg);
+    }
+    card.appendChild(topRow);
 
-    // URL row — hide for search engines, show for real pages
+    // Make whole card clickable — URL opens link, note opens edit
+    card.style.cursor="pointer";
+    card.addEventListener("click",e=>{
+      if(e.target.classList.contains("card-tag"))return;
+      if(isUrl&&item.url)window.open(item.url,"_blank","noopener");
+      else openEdit(item);
+    });
+
+    // URL row — real pages show favicon+host, search engines show nothing extra
     const SEARCH_HOSTS=["www.google.com","google.com","www.bing.com","bing.com","search.yahoo.com","duckduckgo.com","www.baidu.com","yandex.com"];
     if(isUrl){
       try{
         const host=new URL(item.url).hostname;
         if(!SEARCH_HOSTS.includes(host)){
           const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28)||"";
-          const row=document.createElement("a");row.className="card-url-row";row.href=item.url;row.target="_blank";row.rel="noopener";
+          const row=document.createElement("div");row.className="card-url-row";
           const fav=document.createElement("img");fav.className="card-fav";
           fav.src=`https://icons.duckduckgo.com/ip3/${host}.ico`;fav.onerror=()=>fav.style.display="none";
           const info=document.createElement("div");info.className="card-url-info";
@@ -762,17 +790,6 @@ function render(){
     }
 
     if(item.description){const d=document.createElement("div");d.className="card-desc";d.textContent=item.description;card.appendChild(d)}
-
-    if(item.tags.length){
-      const tg=document.createElement("div");tg.className="card-tags";
-      item.tags.forEach(tag=>{
-        const t=document.createElement("span");t.className="card-tag";t.textContent=tag;
-        const c=hashColor(tag);t.style.background=c+"18";t.style.borderColor=c+"44";t.style.color=c;
-        t.addEventListener("click",()=>{filterTag=filterTag===tag?null:tag;render()});
-        tg.appendChild(t);
-      });
-      card.appendChild(tg);
-    }
 
     // Only show date if NOT in a date group (i.e. sorted A-Z or Z-A)
     if(!grouped){
@@ -791,7 +808,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v32";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v35";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
