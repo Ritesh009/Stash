@@ -72,20 +72,20 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 .type-btn{-webkit-flex:1;flex:1;padding:8px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
 .type-btn.active{background:var(--accent);color:#0d0d0f}
 
-.list{padding:12px 16px;padding-bottom:calc(20px + var(--safe-bot));display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:10px}
+.list{padding:12px 16px;padding-bottom:calc(20px + var(--safe-bot));display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;width:100%}
 .empty{text-align:center;color:var(--muted);font-size:14px;font-style:italic;padding:70px 20px;line-height:1.7}
 .grp-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:500;padding:8px 0 4px}
 
 /* Cards */
-.card-wrap{position:relative;overflow:hidden;border-radius:10px;-webkit-transform:translateZ(0);transform:translateZ(0)}
+.card-wrap{position:relative;overflow:hidden;border-radius:10px;-webkit-transform:translateZ(0);transform:translateZ(0);width:100%}
 .del-bg{position:absolute;right:0;top:0;bottom:0;width:88px;background:var(--danger);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
 .edit-bg{position:absolute;left:0;top:0;bottom:0;width:88px;background:#2a5298;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
-.card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:5px;animation:cardIn .18s ease;-webkit-transition:transform .25s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y}
+.card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:5px;animation:cardIn .18s ease;-webkit-transition:transform .25s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .card-title{font-family:Georgia,serif;font-size:15px;color:var(--accent);line-height:1.3;font-weight:600}
 .card-desc{font-size:12px;color:var(--muted);line-height:1.5}
-.card-tags{display:-webkit-flex;display:flex;gap:5px;flex-wrap:wrap}
-.card-tag{font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.03em;cursor:pointer;border:1px solid transparent}
+.card-tags{display:-webkit-flex;display:flex;gap:5px;flex-wrap:wrap;margin-top:1px}
+.card-tag{font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.03em;cursor:pointer;border:1px solid transparent;line-height:1.6}
 .card-date{font-size:10px;color:var(--dim);letter-spacing:.04em}
 
 /* URL row — compact inline style */
@@ -265,18 +265,11 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
   <div class="form-panel hidden" id="formPanel">
     <div>
-      <label>Type</label>
-      <div class="type-toggle">
-        <button class="type-btn active" data-type="note">📝 Note</button>
-        <button class="type-btn" data-type="url">🔗 Web Page</button>
-      </div>
-    </div>
-    <div>
       <label>Title *</label>
       <input type="text" id="inputTitle" placeholder="What is this?" />
     </div>
-    <div id="urlField" style="display:none">
-      <label>URL</label>
+    <div>
+      <label>URL <span style="text-transform:none;letter-spacing:0;font-weight:300">(optional)</span></label>
       <input type="url" id="inputUrl" placeholder="https://…" />
     </div>
     <div>
@@ -442,16 +435,6 @@ document.querySelectorAll(".tab").forEach(tab=>{
 $("menuBtn").addEventListener("click",e=>{e.stopPropagation();$("dropdown").classList.toggle("open")});
 document.addEventListener("click",()=>$("dropdown").classList.remove("open"));
 
-// Type toggle
-document.querySelectorAll(".type-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    itemType=btn.dataset.type;
-    document.querySelectorAll(".type-btn").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    $("urlField").style.display=itemType==="url"?"block":"none";
-  });
-});
-
 // Form toggle
 $("toggleFormBtn").addEventListener("click",()=>{
   formOpen=!formOpen;
@@ -465,10 +448,11 @@ $("toggleFormBtn").addEventListener("click",()=>{
 $("saveBtn").addEventListener("click",()=>addItem({}));
 $("inputTitle").addEventListener("keydown",e=>{if(e.key==="Enter")addItem({})});
 
-function addItem(o, skipDupCheck=false){
+function addItem(o,skipDupCheck=false){
   const title=(o.title!==undefined?o.title:$("inputTitle").value).trim();
-  const url=(o.url!==undefined?o.url:(itemType==="url"?$("inputUrl").value:"")).trim();
-  const type=o.type||itemType;
+  const url=(o.url!==undefined?o.url:$("inputUrl").value).trim();
+  // Auto-detect type — if URL is provided it's a web page, otherwise a note
+  const type=o.type||(url?"url":"note");
   const finalTitle=title||(url?tryHostname(url):"");
   if(!finalTitle){$("formError").classList.remove("hidden");return}
   const tags=(o.tags!==undefined?o.tags:$("inputTags").value).split(",").map(t=>t.trim()).filter(Boolean);
@@ -758,19 +742,22 @@ function render(){
     const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
     card.appendChild(ti);
 
-    // URL — compact single line: favicon + host + path
+    // URL row — hide for search engines, show for real pages
+    const SEARCH_HOSTS=["www.google.com","google.com","www.bing.com","bing.com","search.yahoo.com","duckduckgo.com","www.baidu.com","yandex.com"];
     if(isUrl){
       try{
         const host=new URL(item.url).hostname;
-        const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28)||"";
-        const row=document.createElement("a");row.className="card-url-row";row.href=item.url;row.target="_blank";row.rel="noopener";
-        const fav=document.createElement("img");fav.className="card-fav";
-        fav.src=`https://icons.duckduckgo.com/ip3/${host}.ico`;fav.onerror=()=>fav.style.display="none";
-        const info=document.createElement("div");info.className="card-url-info";
-        const h=document.createElement("span");h.className="card-host";h.textContent=host;
-        info.appendChild(h);
-        if(path){const sep=document.createElement("span");sep.className="card-path";sep.textContent=path;info.appendChild(sep);}
-        row.appendChild(fav);row.appendChild(info);card.appendChild(row);
+        if(!SEARCH_HOSTS.includes(host)){
+          const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28)||"";
+          const row=document.createElement("a");row.className="card-url-row";row.href=item.url;row.target="_blank";row.rel="noopener";
+          const fav=document.createElement("img");fav.className="card-fav";
+          fav.src=`https://icons.duckduckgo.com/ip3/${host}.ico`;fav.onerror=()=>fav.style.display="none";
+          const info=document.createElement("div");info.className="card-url-info";
+          const h=document.createElement("span");h.className="card-host";h.textContent=host;
+          info.appendChild(h);
+          if(path){const sep=document.createElement("span");sep.className="card-path";sep.textContent=path;info.appendChild(sep);}
+          row.appendChild(fav);row.appendChild(info);card.appendChild(row);
+        }
       }catch{}
     }
 
@@ -804,7 +791,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v28";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v32";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
