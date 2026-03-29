@@ -9,7 +9,7 @@ Stash is a lightweight, privacy-first bookmarking and note-saving app that runs 
 ## ✨ Features
 
 - **Save anything** — web pages, notes, ideas, links
-- **Safari Clip** — one-tap saving from any page in Safari via a bookmarklet
+- **Stash Clip** — one-tap saving from any page in any browser via a bookmarklet
 - **Tap to open** — tap any card to open the URL or edit a note
 - **Tags inline** — tags shown on same row as title, tap to filter instantly
 - **Swipe to delete** — swipe left on any card
@@ -50,7 +50,7 @@ Stash is designed to be private by default:
 
 Stash will appear as an app icon on your home screen and open fullscreen.
 
-> ⚠️ **Important:** Use Stash in Safari (not the home screen icon) if you want Safari Clip to work. iOS stores data separately for each context.
+> ⚠️ **Important:** Use Stash in Safari (not the home screen icon) if you want Stash Clip to work. iOS stores data separately for each context.
 
 -----
 
@@ -64,7 +64,7 @@ Stash will appear as an app icon on your home screen and open fullscreen.
 Stash installs as a PWA and opens fullscreen just like a native app.
 
 **Web Clip on Android:**
-The bookmarklet works in Chrome on Android too. Follow the same Safari Clip setup steps but in Chrome — add a bookmark, edit it, paste the code.
+The bookmarklet works in Chrome on Android too. Follow the same Stash Clip setup steps but in Chrome — add a bookmark, edit it, paste the code.
 
 -----
 
@@ -74,7 +74,7 @@ Just open your Stash URL in any browser — Chrome, Firefox, Safari, Edge. No in
 
 To save pages quickly on desktop, the bookmarklet works in every browser:
 
-1. Go to the **🔖 Safari Clip** tab inside Stash
+1. Go to the **🔖 Stash Clip** tab inside Stash
 1. Copy the code
 1. Create a new bookmark in your browser
 1. Replace the URL with the copied code
@@ -101,11 +101,11 @@ Now one click saves any page to Stash from your desktop browser.
 
 -----
 
-## 🔖 Safari Clip Setup
+## 🔖 Stash Clip Setup
 
-Safari Clip lets you save any page to Stash with one tap while browsing.
+Stash Clip lets you save any page to Stash with one tap — works in Safari, Chrome, Firefox and any browser.
 
-1. Go to the **🔖 Safari Clip** tab inside Stash
+1. Go to the **🔖 Stash Clip** tab inside Stash
 1. Tap **Copy Code** to copy the bookmarklet
 1. In Safari, bookmark any page — name it **“Stash It”**
 1. Edit that bookmark and replace the URL with the copied code
@@ -159,7 +159,7 @@ That’s it — completely free, no domain purchase needed, no server to maintai
 |-----------------------------------------------------------|---------|
 |Save notes & web pages                                     |✅ Done   |
 |Tags, search, sort, filter                                 |✅ Done   |
-|Safari Clip bookmarklet                                    |✅ Done   |
+|Stash Clip bookmarklet                                     |✅ Done   |
 |Swipe to edit / delete                                     |✅ Done   |
 |Tag suggestions in edit sheet                              |✅ Done   |
 |Inline tags on cards                                       |✅ Done   |
