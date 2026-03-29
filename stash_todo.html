@@ -369,7 +369,8 @@ const DEFAULT_TODOS = [
   { id: 43, text: "Duplicate detection on new items — merge, replace, keep both or cancel", done: true, cat: "build" },
   { id: 44, text: "Find & resolve existing duplicates scanner (deferred)", done: false, cat: "build" },
   { id: 50, text: "Fix duplicate sheet — pause redirect until user resolves duplicate", done: true, cat: "fix" },
-  { id: 51, text: "Edit existing items — tap card title to open edit sheet", done: true, cat: "build" },
+  { id: 51, text: "Edit existing items — swipe right to edit, swipe left to delete", done: true, cat: "build" },
+  { id: 56, text: "Remove ✕ button from cards — swipe gestures handle delete", done: true, cat: "build" },
   { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
   { id: 9, text: "Bulk delete", done: false, cat: "build" },
   { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
@@ -381,19 +382,18 @@ const DEFAULT_TODOS = [
   { id: 47, text: "Import from browser bookmarks — HTML format (Chrome, Safari, Firefox)", done: false, cat: "build" },
   { id: 48, text: "Import from Obsidian — parse .md files, extract title, body, frontmatter tags", done: false, cat: "build" },
   { id: 49, text: "Import from Pocket — HTML export format", done: false, cat: "build" },
-  { id: 6, text: "iOS Shortcuts integration — native share sheet clipping", done: false, cat: "build" },
   { id: 7, text: "Page thumbnail / screenshot preview on URL cards", done: false, cat: "build" },
 
   // ── To Build — UX Polish ──
-  { id: 53, text: "Tag suggestions — show existing tags as tappable pills when editing, allow adding new ones", done: false, cat: "build" },
-  { id: 54, text: "iOS Shortcuts integration — fix Name source to Safari Web Page, Shortcut Input type to URL", done: false, cat: "fix" },
-  { id: 55, text: "Strip literal brackets from Shortcuts title/url params", done: true, cat: "fix" },
+  { id: 53, text: "Tag suggestions — existing tags as tappable colour pills in edit sheet, type new ones", done: true, cat: "build" },
 
   // ── To Build — Security ──
   { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
   { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
 
   // ── Ideas ──
+  { id: 6, text: "iOS Shortcuts integration — deprioritised, too complex, bookmarklet covers the use case", done: false, cat: "idea" },
+  { id: 54, text: "Strip literal brackets from Shortcuts title/url params — done but feature deprioritised", done: false, cat: "idea" },
   { id: 12, text: "Optional AI tagging — user brings their own API key", done: false, cat: "idea" },
   { id: 13, text: "Smart search by meaning (semantic search)", done: false, cat: "idea" },
   { id: 14, text: "Auto-summary of saved web pages", done: false, cat: "idea" },
@@ -403,10 +403,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v9") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v10") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v9", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v10", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
