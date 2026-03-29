@@ -99,7 +99,7 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
 .page{display:none}.page.active{display:block}
 
-/* Safari Clip */
+/* Stash Clip */
 .clip-page{padding:20px 16px;padding-bottom:calc(40px + var(--safe-bot));display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:12px}
 .clip-hero{text-align:center;padding:16px 0 8px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:7px}
 .clip-hero-icon{font-size:38px}
@@ -248,7 +248,7 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
 <div class="tabs">
   <button class="tab active" data-tab="items">📦 Items</button>
-  <button class="tab" data-tab="clip">🔖 Safari Clip</button>
+  <button class="tab" data-tab="clip">🔖 Stash Clip</button>
 </div>
 
 <!-- Backup banner -->
@@ -311,13 +311,13 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   <div class="list" id="itemList"></div>
 </div>
 
-<!-- SAFARI CLIP PAGE -->
+<!-- STASH CLIP PAGE -->
 
 <div class="page" id="page-clip">
   <div class="clip-page">
     <div class="clip-hero">
       <div class="clip-hero-icon">🔖</div>
-      <div class="clip-hero-title">Safari Clip</div>
+      <div class="clip-hero-title">Stash Clip</div>
       <div class="clip-hero-sub">Save any page to Stash with one tap — no typing needed.</div>
     </div>
     <div class="clip-card">
@@ -808,7 +808,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v35";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v36";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
