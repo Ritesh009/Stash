@@ -371,6 +371,11 @@ const DEFAULT_TODOS = [
   { id: 50, text: "Fix duplicate sheet — pause redirect until user resolves duplicate", done: true, cat: "fix" },
   { id: 51, text: "Edit existing items — swipe right to edit, swipe left to delete", done: true, cat: "build" },
   { id: 56, text: "Remove ✕ button from cards — swipe gestures handle delete", done: true, cat: "build" },
+  { id: 57, text: "Inline tags on card — title + tags on same row", done: true, cat: "build" },
+  { id: 58, text: "Tap card to open URL or edit sheet for notes", done: true, cat: "build" },
+  { id: 59, text: "Hide search engine URLs from cards — Google, Bing etc.", done: true, cat: "build" },
+  { id: 60, text: "Add form simplified — URL always visible, type auto-detected", done: true, cat: "build" },
+  { id: 61, text: "Compact card layout — tighter padding, smaller title, less gaps", done: true, cat: "build" },
   { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
   { id: 9, text: "Bulk delete", done: false, cat: "build" },
   { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
@@ -403,10 +408,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v10") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v11") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v10", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v11", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
