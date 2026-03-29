@@ -78,7 +78,8 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 
 /* Cards */
 .card-wrap{position:relative;overflow:hidden;border-radius:10px;-webkit-transform:translateZ(0);transform:translateZ(0)}
-.del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:var(--danger);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
+.del-bg{position:absolute;right:0;top:0;bottom:0;width:88px;background:var(--danger);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
+.edit-bg{position:absolute;left:0;top:0;bottom:0;width:88px;background:#2a5298;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
 .card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;animation:cardIn .18s ease;-webkit-transition:transform .25s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .card-top{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:flex-start;align-items:flex-start;gap:8px}
@@ -528,27 +529,25 @@ $("dupCancel").addEventListener("click",closeDupSheet);
 // Incoming clip — save immediately, redirect back
 (function(){
   const p=new URLSearchParams(location.search);
-  const t=p.get("t"),u=p.get("u");
+  let t=p.get("t"),u=p.get("u");
   if(t||u){
     history.replaceState({},"",location.pathname);
-    const title=decodeURIComponent(t||"");
-    const url=decodeURIComponent(u||"");
+    // Strip literal [ ] brackets that Shortcuts sometimes passes as plain text
+    function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
+    const title=stripBrackets(decodeURIComponent(t||""));
+    const url=stripBrackets(decodeURIComponent(u||""));
 
     // Check for duplicate before deciding whether to redirect
     const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===(cleanTitle(title)||"").toLowerCase()));
     if(dup){
-      // Duplicate found — show sheet, let user decide, no auto-redirect
       const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
       showDupSheet(dup,newItem);
-      // After user resolves, redirect back
-      const origSave=$("dupSave");
       function redirectBack(){setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1000)}
       $("dupMerge").addEventListener("click",redirectBack,{once:true});
       $("dupReplace").addEventListener("click",redirectBack,{once:true});
       $("dupBoth").addEventListener("click",redirectBack,{once:true});
       $("dupCancel").addEventListener("click",redirectBack,{once:true});
     } else {
-      // No duplicate — save and redirect immediately
       addItem({title,url,type:"url",tags:"",description:""},true);
       showToast("Page stashed ✓");
       setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1200);
@@ -640,17 +639,29 @@ function dateGroup(ts){
 }
 function addSwipe(wrap,card,item){
   let sx=0,dx=0;
+  const THRESHOLD=72;
   card.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;dx=0},{passive:true});
   card.addEventListener("touchmove",e=>{
-    dx=Math.min(0,e.touches[0].clientX-sx);
-    card.style.transition="none";card.style.transform=`translateX(${Math.max(dx,-88)}px)`;
+    dx=e.touches[0].clientX-sx;
+    // Left = delete (negative), Right = edit (positive)
+    const clamped=Math.max(-88,Math.min(88,dx));
+    card.style.transition="none";
+    card.style.transform=`translateX(${clamped}px)`;
   },{passive:true});
   card.addEventListener("touchend",()=>{
     card.style.transition="transform .25s ease";
-    if(dx<-68){
-      card.style.transform="translateX(-100%)";wrap.style.transition="opacity .25s";wrap.style.opacity="0";
+    if(dx<-THRESHOLD){
+      // Swiped left — delete
+      card.style.transform="translateX(-100%)";
+      wrap.style.transition="opacity .25s";wrap.style.opacity="0";
       setTimeout(()=>{items=items.filter(i=>i.id!==item.id);save();render()},250);
-    }else{card.style.transform="translateX(0)"}
+    } else if(dx>THRESHOLD){
+      // Swiped right — edit
+      card.style.transform="translateX(0)";
+      openEdit(item);
+    } else {
+      card.style.transform="translateX(0)";
+    }
   });
 }
 
@@ -698,6 +709,7 @@ function render(){
 
     const wrap=document.createElement("div");wrap.className="card-wrap";
     const bg=document.createElement("div");bg.className="del-bg";bg.textContent="Delete";wrap.appendChild(bg);
+    const ebg=document.createElement("div");ebg.className="edit-bg";ebg.textContent="Edit";wrap.appendChild(ebg);
 
     const isUrl=item.type==="url"&&item.url;
     const card=document.createElement("div");card.className="card";
@@ -705,11 +717,7 @@ function render(){
 
     const top=document.createElement("div");top.className="card-top";
     const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
-    ti.style.cursor="pointer";
-    ti.addEventListener("click",()=>openEdit(item));
-    const dl=document.createElement("button");dl.className="del-btn";dl.innerHTML="✕";
-    dl.addEventListener("click",()=>{if(confirm(`Delete "${dt}"?`)){items=items.filter(i=>i.id!==item.id);save();render()}});
-    top.appendChild(ti);top.appendChild(dl);card.appendChild(top);
+    top.appendChild(ti);card.appendChild(top);
 
     if(isUrl){
       try{
@@ -752,7 +760,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v23";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v26";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
