@@ -10,16 +10,22 @@ Stash is a lightweight, privacy-first bookmarking and note-saving app that runs 
 
 - **Save anything** — web pages, notes, ideas, links
 - **Safari Clip** — one-tap saving from any page in Safari via a bookmarklet
-- **Tags & search** — organize and find items instantly
-- **Edit items** — tap any card to edit title, tags, and description
+- **Tap to open** — tap any card to open the URL or edit a note
+- **Tags inline** — tags shown on same row as title, tap to filter instantly
+- **Swipe to delete** — swipe left on any card
+- **Swipe to edit** — swipe right on any card to edit title, tags, description
+- **Tag suggestions** — existing tags shown as tappable pills when editing
+- **Smart URL display** — search engine URLs hidden from cards but still tappable
 - **Date groups** — items grouped by Today, Yesterday, This Week, This Month
-- **Swipe to delete** — swipe left on any card to remove it
+- **Search & filter** — search titles, descriptions, URLs and tags
+- **Sort** — newest, oldest, A–Z, Z–A
+- **Duplicate detection** — merge, replace, keep both or cancel
 - **Import / Export** — your data as JSON, fully portable
 - **Daily backup** — prompted every 24hrs to save a backup file to your device
 - **Shadow backup** — automatic localStorage copy, auto-restores if data is lost
-- **Duplicate detection** — merge, replace, or keep both when saving duplicates
 - **Works offline** — service worker caches the app for offline use
 - **Installable on iPhone** — add to home screen via Safari
+- **Responsive** — works on phone, tablet and desktop
 
 -----
 
@@ -102,21 +108,25 @@ That’s it — completely free, no domain purchase needed, no server to maintai
 
 ## 🗺 Roadmap
 
-|Feature                                     |Status   |
-|--------------------------------------------|---------|
-|Save notes & web pages                      |✅ Done   |
-|Tags, search, sort, filter                  |✅ Done   |
-|Safari Clip bookmarklet                     |✅ Done   |
-|Edit items                                  |✅ Done   |
-|Import / Export                             |✅ Done   |
-|Duplicate detection                         |✅ Done   |
-|Daily backup prompts                        |✅ Done   |
-|Responsive layout (mobile, tablet, desktop) |✅ Done   |
-|Firebase sync (bring your own account)      |🔜 Planned|
-|iOS Shortcuts share extension               |🔜 Planned|
-|Optional AI tagging (bring your own API key)|💡 Idea   |
-|Optional PIN lock                           |💡 Idea   |
-|Find & resolve existing duplicates          |💡 Idea   |
+|Feature                                                    |Status   |
+|-----------------------------------------------------------|---------|
+|Save notes & web pages                                     |✅ Done   |
+|Tags, search, sort, filter                                 |✅ Done   |
+|Safari Clip bookmarklet                                    |✅ Done   |
+|Swipe to edit / delete                                     |✅ Done   |
+|Tag suggestions in edit sheet                              |✅ Done   |
+|Inline tags on cards                                       |✅ Done   |
+|Tap card to open URL or edit                               |✅ Done   |
+|Import / Export                                            |✅ Done   |
+|Duplicate detection                                        |✅ Done   |
+|Daily backup prompts                                       |✅ Done   |
+|Privacy — no Google fonts or favicons                      |✅ Done   |
+|Responsive layout (mobile, tablet, desktop)                |✅ Done   |
+|Firebase sync (bring your own account)                     |🔜 Planned|
+|Multi-format import (browser bookmarks, Raindrop, Obsidian)|🔜 Planned|
+|Optional AI tagging (bring your own API key)               |💡 Idea   |
+|Optional PIN lock                                          |💡 Idea   |
+|Find & resolve existing duplicates                         |💡 Idea   |
 
 -----
 
