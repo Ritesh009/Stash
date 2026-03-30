@@ -35,10 +35,16 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-
 .btn-primary:active{opacity:.85}
 
 .menu-wrap{position:relative}
-.dropdown{position:absolute;right:0;top:calc(100% + 6px);background:#1a1a1e;border:1px solid var(--border);border-radius:10px;overflow:hidden;z-index:200;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
-.dropdown.open{display:block}
-.dd-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;padding:12px 16px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;border:none;background:none;font-family:'DM Sans',sans-serif;text-align:left}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#1c1c22;border:1px solid var(--border);border-radius:12px;overflow:hidden;z-index:200;min-width:200px;box-shadow:0 12px 32px rgba(0,0,0,.5);display:none}
+.dropdown.open{display:block;animation:fadeSlide .15s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.dd-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;padding:12px 16px;font-size:13px;color:var(--text);cursor:pointer;width:100%;border:none;background:none;font-family:-apple-system,sans-serif;text-align:left;transition:background .1s}
 .dd-item:active{background:var(--border)}
+.dd-item-icon{width:28px;height:28px;border-radius:7px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:13px;-webkit-flex-shrink:0;flex-shrink:0}
+.dd-item-label{display:flex;flex-direction:column;gap:1px}
+.dd-item-title{font-size:13px;color:var(--text);font-weight:500}
+.dd-item-sub{font-size:10px;color:var(--muted)}
+.dd-divider{height:1px;background:var(--border);margin:2px 0}
 
 .tabs{display:-webkit-flex;display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
 .tab{-webkit-flex:1;flex:1;padding:12px 8px;text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s}
@@ -228,6 +234,29 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   </div>
 </div>
 
+<!-- Bookmarks import sheet -->
+
+<div class="edit-sheet" id="bmkSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-family:Georgia,serif;font-size:17px;color:var(--accent);font-weight:600">Import Browser Bookmarks</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.7">
+    Export your bookmarks from your browser first, then choose the file below. Folders become tags automatically.
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:500">How to export</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.8">
+      <strong style="color:var(--text)">Chrome</strong> — Bookmarks → Bookmark manager → ⋮ → Export bookmarks<br>
+      <strong style="color:var(--text)">Safari</strong> — File → Export Bookmarks<br>
+      <strong style="color:var(--text)">Firefox</strong> — Bookmarks → Manage Bookmarks → Import and Backup → Export<br>
+      <strong style="color:var(--text)">Edge</strong> — Favourites → ⋮ → Export favourites
+    </div>
+  </div>
+  <div class="sheet-row">
+    <button class="sheet-cancel" id="bmkSheetCancel">Cancel</button>
+    <button class="sheet-save" id="bmkSheetChoose" style="flex:1">Choose File</button>
+  </div>
+</div>
+
 <div style="position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 12px) 16px 12px;display:flex;display:-webkit-flex;flex-direction:row;-webkit-flex-direction:row;align-items:center;-webkit-align-items:center;justify-content:space-between;-webkit-justify-content:space-between;gap:8px;width:100%">
   <div style="flex-shrink:0;-webkit-flex-shrink:0">
     <span class="logo-sub">Personal Archive</span>
@@ -237,11 +266,32 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
     <div class="menu-wrap">
       <button class="btn btn-ghost" id="menuBtn">Share</button>
       <div class="dropdown" id="dropdown">
-        <button class="dd-item" id="importBtn">↑ &nbsp;Import</button>
-        <button class="dd-item" id="exportBtn">↓ &nbsp;Export</button>
+        <button class="dd-item" id="importBtn">
+          <div class="dd-item-icon" style="background:#1a2e10">📥</div>
+          <div class="dd-item-label">
+            <span class="dd-item-title">Import backup</span>
+            <span class="dd-item-sub">Restore from JSON file</span>
+          </div>
+        </button>
+        <button class="dd-item" id="importBookmarksBtn">
+          <div class="dd-item-icon" style="background:#0a1a2e">🔖</div>
+          <div class="dd-item-label">
+            <span class="dd-item-title">Import bookmarks</span>
+            <span class="dd-item-sub">From Chrome, Safari, Firefox</span>
+          </div>
+        </button>
+        <div class="dd-divider"></div>
+        <button class="dd-item" id="exportBtn">
+          <div class="dd-item-icon" style="background:#1a1a10">📤</div>
+          <div class="dd-item-label">
+            <span class="dd-item-title">Export</span>
+            <span class="dd-item-sub">Save all items as JSON</span>
+          </div>
+        </button>
       </div>
     </div>
     <input type="file" id="importFile" accept=".json" style="display:none"/>
+    <input type="file" id="importBookmarksFile" accept=".html,.htm" style="display:none"/>
     <button class="btn btn-primary" id="toggleFormBtn">+ Add</button>
   </div>
 </div>
@@ -607,7 +657,7 @@ $("editSave").addEventListener("click",()=>{
   showToast("Saved ✓");
 });
 $("editCancel").addEventListener("click",closeEdit);
-$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet()});
+$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
 
 $("searchInput").addEventListener("input",render);
 $("sortSelect").addEventListener("change",render);
@@ -620,8 +670,8 @@ $("exportBtn").addEventListener("click",()=>{
   showToast("Exported!");
 });
 
-// Import
-$("importBtn").addEventListener("click",()=>$("importFile").click());
+// Import Stash backup
+$("importBtn").addEventListener("click",()=>{$("dropdown").classList.remove("open");$("importFile").click()});
 $("importFile").addEventListener("change",function(){
   const file=this.files[0];if(!file)return;
   const reader=new FileReader();
@@ -635,6 +685,69 @@ $("importFile").addEventListener("change",function(){
       items=[...fresh,...items];save();render();
       showToast(`Imported ${fresh.length} items ✓`);
     }catch{showToast("Couldn't read file ✕")}
+    this.value="";
+  };
+  reader.readAsText(file);
+});
+
+// Import browser bookmarks
+$("importBookmarksBtn").addEventListener("click",()=>{
+  $("dropdown").classList.remove("open");
+  $("bmkSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+});
+$("bmkSheetCancel").addEventListener("click",()=>{
+  $("bmkSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+});
+$("bmkSheetChoose").addEventListener("click",()=>{
+  $("bmkSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  $("importBookmarksFile").click();
+});
+$("importBookmarksFile").addEventListener("change",function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const html=e.target.result;
+      const parser=new DOMParser();
+      const doc=parser.parseFromString(html,"text/html");
+      const links=doc.querySelectorAll("a[href]");
+      let imported=0,skipped=0;
+      const existingUrls=new Set(items.map(i=>i.url).filter(Boolean));
+      links.forEach(a=>{
+        const url=a.getAttribute("href");
+        const title=a.textContent.trim();
+        if(!url||!title||url.startsWith("javascript:"))return;
+        if(existingUrls.has(url)){skipped++;return;}
+        // Get folder name as tag — walk up to find parent DL's header
+        let tag="";
+        let el=a.parentElement;
+        while(el){
+          const prev=el.previousElementSibling;
+          if(prev&&(prev.tagName==="H3"||prev.tagName==="H1")){
+            tag=prev.textContent.trim().toLowerCase().replace(/\s+/g,"-");
+            break;
+          }
+          el=el.parentElement;
+        }
+        const addDate=a.getAttribute("add_date");
+        const createdAt=addDate?parseInt(addDate)*1000:Date.now();
+        items.push({
+          id:Date.now()+Math.random(),
+          type:"url",title:cleanTitle(title),
+          description:"",url,
+          tags:tag&&tag!=="bookmarks bar"&&tag!=="bookmarks menu"?[tag]:[],
+          createdAt
+        });
+        existingUrls.add(url);
+        imported++;
+      });
+      items.sort((a,b)=>b.createdAt-a.createdAt);
+      save();render();
+      showToast(`Imported ${imported} bookmarks${skipped>0?`, ${skipped} skipped`:""} ✓`);
+    }catch(err){showToast("Couldn't read bookmarks file ✕")}
     this.value="";
   };
   reader.readAsText(file);
@@ -808,7 +921,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v36";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v40";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
