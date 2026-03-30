@@ -19,13 +19,17 @@ Stash is a lightweight, privacy-first bookmarking and note-saving app that runs 
 - **Date groups** — items grouped by Today, Yesterday, This Week, This Month
 - **Search & filter** — search titles, descriptions, URLs and tags
 - **Sort** — newest, oldest, A–Z, Z–A
-- **Duplicate detection** — merge, replace, keep both or cancel
+- **Duplicate detection** — merge, replace, keep both or cancel on new saves
+- **Find & resolve duplicates** — scanner in Settings to clean up existing items
+- **Bulk delete** — select multiple items and delete at once
+- **Import bookmarks** — drop a browser bookmarks HTML file, folders become tags
 - **Import / Export** — your data as JSON, fully portable
 - **Daily backup** — prompted every 24hrs to save a backup file to your device
 - **Shadow backup** — automatic localStorage copy, auto-restores if data is lost
 - **Works offline** — service worker caches the app for offline use
 - **Installable on iPhone** — add to home screen via Safari
 - **Responsive** — works on phone, tablet and desktop
+- **Animated app icon** — isometric box with lid closing and tape sealing on load
 
 -----
 
@@ -74,7 +78,7 @@ Just open your Stash URL in any browser — Chrome, Firefox, Safari, Edge. No in
 
 To save pages quickly on desktop, the bookmarklet works in every browser:
 
-1. Go to the **🔖 Stash Clip** tab inside Stash
+1. Go to the **⚙️ Settings** tab inside Stash
 1. Copy the code
 1. Create a new bookmark in your browser
 1. Replace the URL with the copied code
@@ -105,7 +109,7 @@ Now one click saves any page to Stash from your desktop browser.
 
 Stash Clip lets you save any page to Stash with one tap — works in Safari, Chrome, Firefox and any browser.
 
-1. Go to the **🔖 Stash Clip** tab inside Stash
+1. Go to the **⚙️ Settings** tab inside Stash
 1. Tap **Copy Code** to copy the bookmarklet
 1. In Safari, bookmark any page — name it **“Stash It”**
 1. Edit that bookmark and replace the URL with the copied code
@@ -123,7 +127,37 @@ Every save writes a second copy to a separate localStorage key. If iOS clears yo
 **Layer 2 — Daily file backup**
 Every 24hrs, a green banner appears prompting you to save a dated JSON file (e.g. `stash-backup-2026-03-28.json`) to your iPhone’s Files app. This survives browser storage clears.
 
-You can also manually export anytime via **Share → Export**.
+You can also manually export anytime via **Share tab → Export**.
+
+-----
+
+## 🗺 Roadmap
+
+|Feature                                            |Status   |
+|---------------------------------------------------|---------|
+|Save notes & web pages                             |✅ Done   |
+|Tags, search, sort, filter                         |✅ Done   |
+|Stash Clip bookmarklet                             |✅ Done   |
+|Swipe to edit / delete                             |✅ Done   |
+|Tag suggestions in edit sheet                      |✅ Done   |
+|Inline tags on cards                               |✅ Done   |
+|Tap card to open URL or edit                       |✅ Done   |
+|Import / Export                                    |✅ Done   |
+|Import browser bookmarks                           |✅ Done   |
+|Duplicate detection (new items)                    |✅ Done   |
+|Find & resolve existing duplicates                 |✅ Done   |
+|Bulk delete                                        |✅ Done   |
+|Daily backup prompts                               |✅ Done   |
+|Privacy — no Google fonts or favicons              |✅ Done   |
+|Responsive layout (mobile, tablet, desktop)        |✅ Done   |
+|Settings tab — Stash Clip, maintenance, danger zone|✅ Done   |
+|Share tab — Import & Export                        |✅ Done   |
+|Animated app icon — box with tape                  |✅ Done   |
+|Modern UI redesign                                 |✅ Done   |
+|Multi-format import (Raindrop, Obsidian)           |🔜 Planned|
+|Browser extension — auto-sync bookmarks            |🔜 Planned|
+|Optional AI tagging (bring your own API key)       |💡 Idea   |
+|Optional PIN lock                                  |💡 Idea   |
 
 -----
 
@@ -150,30 +184,6 @@ If you want your own copy at your own URL:
 That’s it — completely free, no domain purchase needed, no server to maintain.
 
 > Both options are free. The only difference is Option 2 gives you your own private URL and full control over the code.
-
------
-
-## 🗺 Roadmap
-
-|Feature                                                    |Status   |
-|-----------------------------------------------------------|---------|
-|Save notes & web pages                                     |✅ Done   |
-|Tags, search, sort, filter                                 |✅ Done   |
-|Stash Clip bookmarklet                                     |✅ Done   |
-|Swipe to edit / delete                                     |✅ Done   |
-|Tag suggestions in edit sheet                              |✅ Done   |
-|Inline tags on cards                                       |✅ Done   |
-|Tap card to open URL or edit                               |✅ Done   |
-|Import / Export                                            |✅ Done   |
-|Duplicate detection                                        |✅ Done   |
-|Daily backup prompts                                       |✅ Done   |
-|Privacy — no Google fonts or favicons                      |✅ Done   |
-|Responsive layout (mobile, tablet, desktop)                |✅ Done   |
-|Multi-format import (browser bookmarks, Raindrop, Obsidian)|🔜 Planned|
-|Optional AI tagging (bring your own API key)               |💡 Idea   |
-|Optional PIN lock                                          |💡 Idea   |
-|Find & resolve existing duplicates                         |💡 Idea   |
-|App icon                                                   |💡 Idea   |
 
 -----
 
