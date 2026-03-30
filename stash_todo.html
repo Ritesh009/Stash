@@ -362,12 +362,12 @@ const DEFAULT_TODOS = [
   { id: 40, text: "Auto-restore from shadow backup if main data wiped by iOS", done: true, cat: "build" },
 
   // ── To Build — Core ──
-  { id: 2, text: "Add Settings screen", done: false, cat: "build" },
-  { id: 3, text: "Firebase sync — user brings their own account", done: false, cat: "build" },
-  { id: 4, text: "Paste Firebase config in Settings to enable sync", done: false, cat: "build" },
-  { id: 5, text: "Once synced, Safari clipper works with home screen app", done: false, cat: "build" },
+  { id: 2, text: "Settings tab — Stash Clip, Find Duplicates, Bulk Delete, Danger Zone", done: true, cat: "build" },
+  { id: 3, text: "Firebase sync — removed, conflicts with privacy-first philosophy", done: false, cat: "idea" },
+  { id: 4, text: "Server-free sync — iOS platform limitation, no clean solution exists", done: false, cat: "idea" },
+  { id: 5, text: "Once synced, Safari clipper works with home screen app", done: false, cat: "idea" },
   { id: 43, text: "Duplicate detection on new items — merge, replace, keep both or cancel", done: true, cat: "build" },
-  { id: 44, text: "Find & resolve existing duplicates scanner (deferred)", done: false, cat: "build" },
+  { id: 44, text: "Find & resolve existing duplicates scanner", done: true, cat: "build" },
   { id: 50, text: "Fix duplicate sheet — pause redirect until user resolves duplicate", done: true, cat: "fix" },
   { id: 51, text: "Edit existing items — swipe right to edit, swipe left to delete", done: true, cat: "build" },
   { id: 56, text: "Remove ✕ button from cards — swipe gestures handle delete", done: true, cat: "build" },
@@ -377,14 +377,17 @@ const DEFAULT_TODOS = [
   { id: 60, text: "Add form simplified — URL always visible, type auto-detected", done: true, cat: "build" },
   { id: 61, text: "Compact card layout — tighter padding, smaller title, less gaps", done: true, cat: "build" },
   { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
-  { id: 9, text: "Bulk delete", done: false, cat: "build" },
+  { id: 9, text: "Bulk delete — tap to select cards, delete all at once", done: true, cat: "build" },
   { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
   { id: 11, text: "Image / screenshot saving", done: false, cat: "build" },
 
   // ── To Build — Import/Export ──
-  { id: 45, text: "Multi-format importer — auto-detect JSON, CSV, HTML, MD", done: false, cat: "build" },
-  { id: 46, text: "Import from Raindrop.io — JSON and CSV export formats", done: false, cat: "build" },
-  { id: 47, text: "Import from browser bookmarks — HTML format (Chrome, Safari, Firefox)", done: false, cat: "build" },
+  { id: 45, text: "Multi-format importer — auto-detect JSON, CSV, HTML, MD", done: true, cat: "build" },
+  { id: 47, text: "Import from browser bookmarks — HTML format (Chrome, Safari, Firefox, Edge)", done: true, cat: "build" },
+  { id: 64, text: "Share tab — dedicated page for Import / Export replacing dropdown", done: true, cat: "build" },
+  { id: 65, text: "Modern UI redesign — borderless cards, pill tabs, pill search, system font", done: true, cat: "build" },
+  { id: 66, text: "Animated splash screen — box lid closes with tape on app load", done: true, cat: "build" },
+  { id: 63, text: "Browser extension — auto-sync bookmarks without manual export (Chrome/Firefox first)", done: false, cat: "build" },
   { id: 48, text: "Import from Obsidian — parse .md files, extract title, body, frontmatter tags", done: false, cat: "build" },
   { id: 49, text: "Import from Pocket — HTML export format", done: false, cat: "build" },
   { id: 7, text: "Page thumbnail / screenshot preview on URL cards", done: false, cat: "build" },
@@ -396,7 +399,8 @@ const DEFAULT_TODOS = [
   { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
   { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
 
-  // ── Ideas ──
+  // ── To Build — Branding ──
+  { id: 62, text: "Animated app icon — isometric box with lid closing and tape sealing", done: true, cat: "build" },
   { id: 6, text: "iOS Shortcuts integration — deprioritised, too complex, bookmarklet covers the use case", done: false, cat: "idea" },
   { id: 54, text: "Strip literal brackets from Shortcuts title/url params — done but feature deprioritised", done: false, cat: "idea" },
   { id: 12, text: "Optional AI tagging — user brings their own API key", done: false, cat: "idea" },
@@ -408,10 +412,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v11") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v18") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v11", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v18", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
