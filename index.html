@@ -9,176 +9,243 @@
   <meta name="apple-mobile-web-app-title" content="Stash" />
   <meta name="theme-color" content="#0d0d0f" />
   <title>Stash</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d0d0f'/><text y='.9em' font-size='72' x='12'>📦</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d0d10'/><polygon points='50,54 84,36 84,74 50,92' fill='%23c8c2b6'/><polygon points='16,36 50,54 50,92 16,74' fill='%23e8e2d6'/><polygon points='16,36 50,18 84,36 50,54' fill='%23f0ece4'/><polygon points='50,54 84,36 84,42 50,60' fill='%23b0aa9e'/><polygon points='16,36 50,54 50,60 16,42' fill='%23d4cec4'/></svg>"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230d0d10'/><polygon points='90,98 152,64 152,134 90,166' fill='%23c8c2b6'/><polygon points='28,64 90,98 90,166 28,134' fill='%23e8e2d6'/><polygon points='28,64 90,32 152,64 90,98' fill='%23f0ece4'/><polygon points='90,98 152,64 152,76 90,110' fill='%23b0aa9e'/><polygon points='28,64 90,98 90,110 28,76' fill='%23d4cec4'/></svg>"/>
   <style>
-    /* Embedded font faces — no external calls */
-    @font-face{font-family:'Playfair Display';font-style:normal;font-weight:400;src:local('Georgia'),local('Times New Roman')}
-    @font-face{font-family:'DM Sans';font-style:normal;font-weight:300 500;src:local('-apple-system'),local('BlinkMacSystemFont'),local('Helvetica Neue'),local('Arial')}
     :root {
-      --bg:#0d0d0f; --surface:#111115; --border:#1f1f24; --text:#ede9e2;
-      --muted:#6b6b74; --dim:#3a3a44; --accent:#e8e2d6; --danger:#e05c5c;
-      --link:#4D96FF; --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+      --bg:#0d0d10; --surface:#141418; --border:#222228; --text:#f0ece4;
+      --muted:#72727c; --dim:#2e2e36; --accent:#e8e2d6; --danger:#e05c5c;
+      --link:#5b9cf6; --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+      --radius:12px; --radius-sm:8px; --radius-lg:16px;
+      --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;font-size:15px;min-height:100vh;overscroll-behavior:none}
+    html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
 ```
-header{position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 12px) 16px 12px}
-.logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--accent)}
-.logo-sub{font-size:9px;font-family:'DM Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;font-weight:300;margin-bottom:2px}
-.hdr-right{display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;gap:7px;flex-shrink:0}
+/* ── Header ── */
+header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
+.logo{font-size:22px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
+.logo-sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
-.btn{border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:8px;transition:all .15s;padding:0 13px;height:34px;display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;white-space:nowrap}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-ghost:active{background:var(--surface)}
-.btn-primary{background:var(--accent);color:#0d0d0f}
-.btn-primary:active{opacity:.85}
+/* ── Buttons ── */
+.btn{border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;border-radius:var(--radius-sm);transition:opacity .15s;padding:0 14px;height:34px;display:inline-flex;align-items:center;white-space:nowrap;letter-spacing:-.01em}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:active{opacity:.7}
+.btn-primary{background:var(--text);color:var(--bg);font-weight:600}
+.btn-primary:active{opacity:.8}
 
+/* ── Dropdown ── */
 .menu-wrap{position:relative}
-.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#1c1c22;border:1px solid var(--border);border-radius:12px;overflow:hidden;z-index:200;min-width:200px;box-shadow:0 12px 32px rgba(0,0,0,.5);display:none}
-.dropdown.open{display:block;animation:fadeSlide .15s ease}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.dd-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;padding:12px 16px;font-size:13px;color:var(--text);cursor:pointer;width:100%;border:none;background:none;font-family:-apple-system,sans-serif;text-align:left;transition:background .1s}
-.dd-item:active{background:var(--border)}
-.dd-item-icon{width:28px;height:28px;border-radius:7px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:13px;-webkit-flex-shrink:0;flex-shrink:0}
-.dd-item-label{display:flex;flex-direction:column;gap:1px}
-.dd-item-title{font-size:13px;color:var(--text);font-weight:500}
-.dd-item-sub{font-size:10px;color:var(--muted)}
-.dd-divider{height:1px;background:var(--border);margin:2px 0}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#18181d;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;z-index:200;min-width:210px;box-shadow:0 20px 50px rgba(0,0,0,.7);display:none}
+.dropdown.open{display:block;animation:fadeDown .15s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.dd-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;width:100%;border:none;background:none;text-align:left;transition:background .1s}
+.dd-item:active{background:var(--dim)}
+.dd-item-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.dd-item-title{font-size:13px;color:var(--text);font-weight:500;letter-spacing:-.01em}
+.dd-item-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.dd-divider{height:1px;background:var(--border);margin:3px 0}
 
-.tabs{display:-webkit-flex;display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
-.tab{-webkit-flex:1;flex:1;padding:12px 8px;text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;transition:all .15s}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* ── Tabs — iOS segmented control ── */
+.tabs{display:flex;background:var(--bg);padding:10px 16px;border-bottom:1px solid var(--border)}
+.tab-group{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:2px;width:100%}
+.tab{flex:1;padding:7px 12px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;font-family:var(--font);border-radius:8px;transition:all .2s;text-align:center;letter-spacing:-.01em}
+.tab.active{background:var(--bg);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
-.controls{padding:13px 16px 10px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:9px;border-bottom:1px solid var(--border)}
+/* ── Controls ── */
+.controls{padding:12px 16px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)}
 .search-wrap{position:relative}
-.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
-input[type=text],input[type=search],input[type=url],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;appearance:none}
-input[type=search]{padding-left:36px}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+input[type=text],input[type=search],input[type=url],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:15px;font-family:var(--font);outline:none;-webkit-appearance:none}
+input[type=search]{padding-left:40px;border-radius:22px;background:#1a1a20;border-color:transparent;font-size:14px}
+input[type=search]:focus{border-color:var(--border);background:var(--surface)}
 input::placeholder,textarea::placeholder{color:var(--muted)}
 input:focus,textarea:focus{border-color:var(--dim)}
 textarea{resize:none;line-height:1.5}
-.ctrl-row{display:-webkit-flex;display:flex;gap:8px;-webkit-align-items:center;align-items:center}
-select{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;cursor:pointer;-webkit-flex-shrink:0;flex-shrink:0}
-.count{margin-left:auto;font-size:11px;color:var(--muted);letter-spacing:.05em;white-space:nowrap}
+.ctrl-row{display:flex;gap:8px;align-items:center}
+select{background:transparent;border:none;color:var(--muted);padding:4px 4px;font-size:12px;font-family:var(--font);-webkit-appearance:none;appearance:none;cursor:pointer;flex-shrink:0}
+.count{margin-left:auto;font-size:12px;color:var(--dim);white-space:nowrap}
 
-.tag-bar{padding:9px 16px;display:-webkit-flex;display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--border)}
+/* ── Tag bar ── */
+.tag-bar{padding:10px 16px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--border)}
 .tag-bar::-webkit-scrollbar{display:none}
 .tag-bar.hidden{display:none}
-.tag-pill{-webkit-flex-shrink:0;flex-shrink:0;border:1px solid var(--border);background:transparent;color:var(--muted);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
-.tag-pill.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent)}
+.tag-pill{flex-shrink:0;border:1px solid var(--border);background:transparent;color:var(--muted);padding:4px 11px;border-radius:20px;font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em}
+.tag-pill.active{background:var(--text);color:var(--bg);border-color:var(--text)}
 
-.form-panel{border-bottom:1px solid var(--border);padding:16px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:11px;background:#0f0f12;animation:fadeSlide .2s ease}
+/* ── Form ── */
+.form-panel{border-bottom:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--surface);animation:fadeDown .2s ease}
 .form-panel.hidden{display:none}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-weight:500}
+label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:600}
 .form-error{font-size:12px;color:var(--danger)}
 .form-error.hidden{display:none}
-.type-toggle{display:-webkit-flex;display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.type-btn{-webkit-flex:1;flex:1;padding:8px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
-.type-btn.active{background:var(--accent);color:#0d0d0f}
 
-.list{padding:12px 16px;padding-bottom:calc(20px + var(--safe-bot));display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;width:100%}
-.empty{text-align:center;color:var(--muted);font-size:14px;font-style:italic;padding:70px 20px;line-height:1.7}
-.grp-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:500;padding:8px 0 4px}
+/* ── List ── */
+.list{padding:10px 12px calc(28px + var(--safe-bot));display:flex;flex-direction:column;gap:2px;width:100%}
+.empty{text-align:center;color:var(--muted);font-size:14px;padding:80px 20px;line-height:2}
+.grp-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:14px 4px 6px}
 
-/* Cards */
-.card-wrap{position:relative;overflow:hidden;border-radius:10px;-webkit-transform:translateZ(0);transform:translateZ(0);width:100%}
-.del-bg{position:absolute;right:0;top:0;bottom:0;width:88px;background:var(--danger);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
-.edit-bg{position:absolute;left:0;top:0;bottom:0;width:88px;background:#2a5298;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em}
-.card{position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:5px;animation:cardIn .18s ease;-webkit-transition:transform .25s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
+/* ── Cards — borderless, elevation-based ── */
+.card-wrap{position:relative;overflow:hidden;border-radius:var(--radius);-webkit-transform:translateZ(0);transform:translateZ(0);width:100%}
+.del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:#c0392b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.edit-bg{position:absolute;left:0;top:0;bottom:0;width:80px;background:#1a3a6a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.card{position:relative;z-index:1;background:var(--surface);border:none;border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:5px;animation:cardIn .18s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
+.card:active{opacity:.85}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.card-top-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;gap:8px;min-width:0}
-.card-title{font-family:Georgia,serif;font-size:15px;color:var(--accent);line-height:1.3;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card-tags-inline{display:-webkit-flex;display:flex;gap:4px;-webkit-flex-shrink:0;flex-shrink:0;flex-wrap:nowrap;max-width:45%;overflow:hidden}
-.card-desc{font-size:12px;color:var(--muted);line-height:1.5}
-.card-tags{display:-webkit-flex;display:flex;gap:5px;flex-wrap:wrap;margin-top:1px}
-.card-tag{font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.03em;cursor:pointer;border:1px solid transparent;line-height:1.6}
-.card-date{font-size:10px;color:var(--dim);letter-spacing:.04em}
-
-/* URL row — compact inline style */
-.card-url-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:7px;text-decoration:none}
-.card-fav{width:16px;height:16px;border-radius:3px;-webkit-flex-shrink:0;flex-shrink:0;object-fit:contain}
-.card-url-info{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:4px;min-width:0}
-.card-host{font-size:11px;color:var(--link);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.card-title{font-size:14px;color:var(--text);line-height:1.4;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.02em}
+.card-tags-inline{display:flex;gap:4px;flex-shrink:0;flex-wrap:nowrap;max-width:45%;overflow:hidden}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.5;letter-spacing:-.01em}
+.card-tag{font-size:10px;padding:2px 7px;border-radius:20px;cursor:pointer;border:none;line-height:1.6;letter-spacing:.01em;font-weight:500;opacity:.85}
+.card-date{font-size:10px;color:var(--dim)}
+.card-url-row{display:flex;align-items:center;gap:6px}
+.card-fav{width:13px;height:13px;border-radius:3px;flex-shrink:0;object-fit:contain;opacity:.8}
+.card-url-info{display:flex;align-items:center;gap:3px;min-width:0}
+.card-host{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-path{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .page{display:none}.page.active{display:block}
 
-/* Stash Clip */
-.clip-page{padding:20px 16px;padding-bottom:calc(40px + var(--safe-bot));display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:12px}
-.clip-hero{text-align:center;padding:16px 0 8px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:7px}
-.clip-hero-icon{font-size:38px}
-.clip-hero-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent)}
-.clip-hero-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:280px}
-.clip-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:15px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:11px}
-.clip-card-warn{-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:flex-start;align-items:flex-start;gap:11px;background:#1a1208;border-color:#3a2a10}
-.clip-head{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:9px}
-.clip-badge{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--dim);color:var(--muted);padding:3px 8px;border-radius:20px;white-space:nowrap}
+/* ── Settings / Clip page ── */
+.clip-page{padding:16px;padding-bottom:calc(40px + var(--safe-bot));display:flex;flex-direction:column;gap:10px}
+.clip-card{background:var(--surface);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.clip-card-warn{flex-direction:row;align-items:flex-start;gap:10px;background:#1a1208}
+.clip-head{display:flex;align-items:center;gap:10px}
+.clip-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--dim);color:var(--muted);padding:3px 8px;border-radius:20px;white-space:nowrap}
 .clip-badge.done{background:#1a2e10;color:#6BCB77}
-.clip-card-title{font-size:14px;font-weight:500;color:var(--text)}
+.clip-card-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.02em}
 .clip-body{font-size:13px;color:var(--muted);line-height:1.7}
 .clip-body strong{color:var(--text);font-weight:500}
-.clip-code{background:#0a0a0d;border:1px solid var(--border);border-radius:6px;padding:11px;font-size:11px;color:#a0c4ff;font-family:monospace;word-break:break-all;line-height:1.6;user-select:all;-webkit-user-select:all}
-.clip-steps{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:7px}
-.clip-step{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.4}
+.clip-code{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;color:#7eb8ff;font-family:monospace;word-break:break-all;line-height:1.6;user-select:all;-webkit-user-select:all}
+.clip-steps{display:flex;flex-direction:column;gap:8px}
+.clip-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.4}
 .clip-step strong{color:var(--text)}
-.clip-icon{width:27px;height:27px;border-radius:7px;background:var(--bg);border:1px solid var(--border);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:12px;-webkit-flex-shrink:0;flex-shrink:0}
+.clip-icon{width:26px;height:26px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--muted)}
+.settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px}
 
-.toast{position:fixed;bottom:calc(22px + var(--safe-bot));left:50%;transform:translateX(-50%);background:var(--accent);color:#0d0d0f;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:999}
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em}
 .toast.show{opacity:1}
 
-/* Duplicate sheet */
-.dup-sheet{position:fixed;bottom:0;left:0;right:0;z-index:502;background:#18181c;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px calc(24px + var(--safe-bot));display:none;flex-direction:column;gap:14px;animation:sheetUp .25s ease}
-.dup-sheet.show{display:flex}
-.dup-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
-.dup-cards{display:flex;gap:10px}
-.dup-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:5px;min-width:0}
-.dup-card-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.dup-card-title{font-size:13px;color:var(--accent);font-family:Georgia,serif;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dup-card-tags{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dup-card-desc{font-size:10px;color:var(--dim);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.dup-actions{display:flex;flex-direction:column;gap:8px}
-.dup-btn{width:100%;height:42px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:-apple-system,sans-serif;border:none;transition:opacity .15s}
-.dup-btn:active{opacity:.75}
-.dup-btn-merge{background:var(--accent);color:#0d0d0f;font-weight:600}
-.dup-btn-replace{background:var(--surface);border:1px solid var(--border)!important;color:var(--text)}
-.dup-btn-both{background:transparent;border:1px solid var(--border)!important;color:var(--muted)}
-.dup-btn-cancel{background:transparent;color:var(--dim);font-size:12px;height:32px}
-
-/* Edit sheet */
-.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+/* ── Sheets ── */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .sheet-overlay.show{display:block}
-.edit-sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:#18181c;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px calc(24px + var(--safe-bot));display:none;flex-direction:column;gap:13px;animation:sheetUp .25s ease}
-.edit-sheet.show{display:flex}
+.edit-sheet,.dup-sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:#1a1a20;border-top:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px 20px calc(28px + var(--safe-bot));display:none;flex-direction:column;gap:14px;animation:sheetUp .3s cubic-bezier(.32,.72,0,1)}
+.edit-sheet.show,.dup-sheet.show{display:flex}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.sheet-handle{width:36px;height:4px;background:var(--dim);border-radius:4px;margin:0 auto -4px}
-.sheet-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:5px;display:block}
-.sheet-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:15px;font-family:-apple-system,sans-serif;outline:none;-webkit-appearance:none}
+.sheet-handle{width:32px;height:4px;background:var(--dim);border-radius:4px;margin:0 auto -6px}
+.sheet-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;display:block}
+.sheet-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:15px;font-family:var(--font);outline:none;-webkit-appearance:none}
 .sheet-input::placeholder{color:var(--muted)}
 .sheet-input:focus{border-color:var(--dim)}
 .sheet-row{display:flex;gap:8px}
-.sheet-save{flex:1;background:var(--accent);color:#0d0d0f;border:none;height:42px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif}
-.sheet-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0 16px;height:42px;border-radius:8px;font-size:13px;cursor:pointer;font-family:-apple-system,sans-serif}
+.sheet-save{flex:1;background:var(--text);color:var(--bg);border:none;height:46px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);letter-spacing:-.01em}
+.sheet-cancel{background:var(--surface);border:none;color:var(--muted);padding:0 16px;height:46px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;font-family:var(--font)}
+.dup-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dup-cards{display:flex;gap:8px}
+.dup-card{flex:1;background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.dup-card-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dup-card-title{font-size:13px;color:var(--text);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.dup-card-tags{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dup-card-desc{font-size:10px;color:var(--dim);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dup-actions{display:flex;flex-direction:column;gap:8px}
+.dup-btn{width:100%;height:46px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);border:none;transition:opacity .15s;letter-spacing:-.01em}
+.dup-btn:active{opacity:.7}
+.dup-btn-merge{background:var(--text);color:var(--bg);font-weight:600}
+.dup-btn-replace{background:var(--surface);color:var(--text)}
+.dup-btn-both{background:transparent;border:1px solid var(--border)!important;color:var(--muted)}
+.dup-btn-cancel{background:transparent;color:var(--dim);font-size:12px;height:36px}
 
-/* Backup banner */
-.backup-banner{display:none;background:#1a2e10;border-bottom:1px solid #2d4a1a;padding:11px 16px;gap:10px;align-items:center}
+/* ── Backup banner ── */
+.backup-banner{display:none;background:#111a0a;border-bottom:1px solid #1a2e10;padding:11px 16px;gap:10px;align-items:center}
 .backup-banner.show{display:flex}
-.backup-banner-text{flex:1;font-size:13px;color:#8fcc6a;line-height:1.4}
-.backup-banner-text strong{color:#aee08a}
-.backup-btn{background:#2d5016;border:none;color:#aee08a;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:-apple-system,sans-serif;white-space:nowrap}
-.backup-dismiss{background:none;border:none;color:#4a6a2a;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
+.backup-banner-text{flex:1;font-size:13px;color:#7ab85a;line-height:1.4}
+.backup-banner-text strong{color:#98d475}
+.backup-btn{background:#1a3012;border:none;color:#98d475;padding:7px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.backup-dismiss{background:none;border:none;color:#2e4a20;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
 
-/* Tag suggestions */
-.tag-suggestions{display:flex;flex-wrap:wrap;gap:7px;min-height:10px}
-.tag-suggestion{border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 12px;border-radius:20px;font-size:11px;font-family:-apple-system,sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
-.tag-suggestion.selected{color:#0d0d0f;border-color:transparent}
-.tag-suggestions-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px;display:block}
+/* ── Tag suggestions ── */
+.tag-suggestions{display:flex;flex-wrap:wrap;gap:6px;min-height:10px}
+.tag-suggestion{border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 11px;border-radius:20px;font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tag-suggestion.selected{color:var(--bg);border-color:transparent}
+.tag-suggestions-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px;display:block}
+
+/* ── Splash screen ── */
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
 ```
 
   </style>
 </head>
 <body>
+
+<!-- Splash screen -->
+
+<div id="splash">
+  <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer group — box bounce after tape applied -->
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="0 0; 0 0; 0 0; 0 4; 0 -3; 0 1; 0 0"
+        keyTimes="0; 0.55; 0.60; 0.65; 0.70; 0.75; 1"
+        dur="1.8s"
+        fill="freeze"
+        calcMode="spline"
+        keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
+      />
+      <!-- Box body -->
+      <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
+      <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
+      <polygon points="48,54 82,36 82,42 48,60" fill="#b0aa9e"/>
+      <polygon points="14,36 48,54 48,60 14,42" fill="#d4cec4"/>
+      <!-- Lid — starts open, swings closed -->
+      <g>
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          values="-55 48 54; -55 48 54; 0 48 54; 0 48 54"
+          keyTimes="0; 0.15; 0.45; 1"
+          dur="1.8s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+        />
+        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="0.1s" fill="freeze"/>
+        <polygon points="14,36 48,18 82,36 48,54" fill="#f0ece4"/>
+        <polygon points="26,31 48,20 70,31 48,42" fill="#ffffff" opacity=".1"/>
+      </g>
+      <!-- Tape strip — grows left to right after lid closes -->
+      <g opacity="0">
+        <polygon points="22,44 74,26 74,31 22,49" fill="#f5e97a" opacity=".75"/>
+        <polygon points="22,44 74,26 74,28 22,46" fill="#ffffff" opacity=".3"/>
+        <animateTransform
+          attributeName="transform"
+          type="scale"
+          values="0 1; 0 1; 1 1; 1 1"
+          keyTimes="0; 0.50; 0.72; 1"
+          dur="1.8s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+          transform-origin="22 44"
+        />
+        <animate
+          attributeName="opacity"
+          values="0; 0; 1; 1"
+          keyTimes="0; 0.50; 0.52; 1"
+          dur="1.8s"
+          fill="freeze"
+        />
+      </g>
+    </g>
+  </svg>
+  <div id="splash-label">Stash</div>
+</div>
 
 <!-- Edit sheet -->
 
@@ -257,39 +324,109 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   </div>
 </div>
 
-<div style="position:sticky;top:0;z-index:100;background:rgba(13,13,15,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 12px) 16px 12px;display:flex;display:-webkit-flex;flex-direction:row;-webkit-flex-direction:row;align-items:center;-webkit-align-items:center;justify-content:space-between;-webkit-justify-content:space-between;gap:8px;width:100%">
-  <div style="flex-shrink:0;-webkit-flex-shrink:0">
-    <span class="logo-sub">Personal Archive</span>
-    <div class="logo">Stash</div>
-  </div>
-  <div style="display:flex;display:-webkit-flex;flex-direction:row;-webkit-flex-direction:row;align-items:center;-webkit-align-items:center;gap:7px;flex-shrink:0;-webkit-flex-shrink:0">
-    <div class="menu-wrap">
-      <button class="btn btn-ghost" id="menuBtn">Share</button>
-      <div class="dropdown" id="dropdown">
-        <button class="dd-item" id="importBtn">
-          <div class="dd-item-icon" style="background:#1a2e10">📥</div>
-          <div class="dd-item-label">
-            <span class="dd-item-title">Import backup</span>
-            <span class="dd-item-sub">Restore from JSON file</span>
-          </div>
-        </button>
-        <button class="dd-item" id="importBookmarksBtn">
-          <div class="dd-item-icon" style="background:#0a1a2e">🔖</div>
-          <div class="dd-item-label">
-            <span class="dd-item-title">Import bookmarks</span>
-            <span class="dd-item-sub">From Chrome, Safari, Firefox</span>
-          </div>
-        </button>
-        <div class="dd-divider"></div>
-        <button class="dd-item" id="exportBtn">
-          <div class="dd-item-icon" style="background:#1a1a10">📤</div>
-          <div class="dd-item-label">
-            <span class="dd-item-title">Export</span>
-            <span class="dd-item-sub">Save all items as JSON</span>
-          </div>
-        </button>
+<!-- Find Duplicates sheet -->
+
+<div class="edit-sheet" id="dupScanSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-family:Georgia,serif;font-size:17px;color:var(--accent);font-weight:600">Find Duplicates</div>
+  <div id="dupScanStatus" style="font-size:13px;color:var(--muted);line-height:1.6"></div>
+  <div id="dupScanGroup" style="display:none;flex-direction:column;gap:10px">
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:500">Duplicate group <span id="dupScanCounter"></span></div>
+    <div class="dup-cards">
+      <div class="dup-card">
+        <div class="dup-card-label">Item A</div>
+        <div class="dup-card-title" id="dupScanTitleA"></div>
+        <div class="dup-card-tags" id="dupScanTagsA"></div>
+        <div class="dup-card-desc" id="dupScanDescA"></div>
+      </div>
+      <div class="dup-card" style="border-color:var(--link)33;background:#0a0f1a">
+        <div class="dup-card-label" style="color:var(--link)">Item B</div>
+        <div class="dup-card-title" id="dupScanTitleB"></div>
+        <div class="dup-card-tags" id="dupScanTagsB"></div>
+        <div class="dup-card-desc" id="dupScanDescB"></div>
       </div>
     </div>
+    <button class="dup-btn dup-btn-merge" id="dupScanMerge">✦ Merge — combine tags &amp; notes</button>
+    <button class="dup-btn dup-btn-replace" id="dupScanKeepA">Keep A — delete B</button>
+    <button class="dup-btn dup-btn-both" id="dupScanKeepB">Keep B — delete A</button>
+    <button class="dup-btn dup-btn-cancel" id="dupScanSkip">Skip this pair</button>
+  </div>
+  <button class="sheet-cancel" id="dupScanClose" style="width:100%;height:42px;border-radius:8px;margin-top:4px">Close</button>
+</div>
+
+<div style="position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+  <div>
+    <div class="logo">Stash</div>
+    <div class="logo-sub">Personal Archive</div>
+  </div>
+  <svg width="44" height="44" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer group handles box bounce after tape applied -->
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="0 0; 0 0; 0 0; 0 3; 0 -2; 0 0; 0 0"
+        keyTimes="0; 0.52; 0.56; 0.60; 0.65; 0.70; 1"
+        dur="3.5s"
+        repeatCount="indefinite"
+        calcMode="spline"
+        keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
+      />
+
+```
+  <!-- Box body -->
+  <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
+  <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
+  <polygon points="48,54 82,36 82,42 48,60" fill="#b0aa9e"/>
+  <polygon points="14,36 48,54 48,60 14,42" fill="#d4cec4"/>
+
+  <!-- Lid rotation group -->
+  <g>
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      values="0 48 54; -52 48 54; -52 48 54; 0 48 54; 0 48 54"
+      keyTimes="0; 0.25; 0.45; 0.58; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+    />
+    <polygon points="14,36 48,18 82,36 48,54" fill="#f0ece4"/>
+    <polygon points="26,31 48,20 70,31 48,42" fill="#ffffff" opacity=".1"/>
+  </g>
+
+  <!-- Tape strip across lid seam — grows from left to right after lid closes -->
+  <g opacity="0">
+    <!-- Tape body — slightly translucent warm strip -->
+    <polygon points="22,44 74,26 74,31 22,49" fill="#f5e97a" opacity=".75"/>
+    <!-- Tape shine -->
+    <polygon points="22,44 74,26 74,28 22,46" fill="#ffffff" opacity=".3"/>
+    <!-- Animate tape appearing: clip via scaleX from 0 to 1 -->
+    <animateTransform
+      attributeName="transform"
+      type="scale"
+      values="0 1; 0 1; 1 1; 1 1; 1 1; 0 1"
+      keyTimes="0; 0.52; 0.64; 0.75; 0.88; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1; 0 0 1 1; 0.4 0 0.2 1"
+      transform-origin="22 44"
+    />
+    <animate
+      attributeName="opacity"
+      values="0; 0; 1; 1; 1; 0"
+      keyTimes="0; 0.52; 0.54; 0.75; 0.88; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+    />
+  </g>
+</g>
+```
+
+  </svg>
+  <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
     <input type="file" id="importFile" accept=".json" style="display:none"/>
     <input type="file" id="importBookmarksFile" accept=".html,.htm" style="display:none"/>
     <button class="btn btn-primary" id="toggleFormBtn">+ Add</button>
@@ -297,8 +434,11 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
 </div>
 
 <div class="tabs">
-  <button class="tab active" data-tab="items">📦 Items</button>
-  <button class="tab" data-tab="clip">🔖 Stash Clip</button>
+  <div class="tab-group">
+    <button class="tab active" data-tab="items">📦 Items</button>
+    <button class="tab" data-tab="share">⬆ Share</button>
+    <button class="tab" data-tab="settings">⚙️ Settings</button>
+  </div>
 </div>
 
 <!-- Backup banner -->
@@ -309,6 +449,14 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   </div>
   <button class="backup-btn" id="backupNowBtn">Save to Files</button>
   <button class="backup-dismiss" id="backupDismissBtn">✕</button>
+</div>
+
+<!-- Bulk delete bar -->
+
+<div id="bulkBar" style="display:none;background:#2a0a0a;border-bottom:1px solid var(--danger);padding:10px 16px;gap:10px;align-items:center">
+  <div id="bulkCount" style="flex:1;font-size:13px;color:#ff8a8a;font-weight:500"></div>
+  <button id="bulkDeleteConfirm" style="background:var(--danger);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif">Delete</button>
+  <button id="bulkCancel" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:-apple-system,sans-serif">Cancel</button>
 </div>
 
 <!-- ITEMS PAGE -->
@@ -361,49 +509,119 @@ label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase
   <div class="list" id="itemList"></div>
 </div>
 
-<!-- STASH CLIP PAGE -->
+<!-- SETTINGS PAGE -->
 
-<div class="page" id="page-clip">
+<div class="page" id="page-settings">
   <div class="clip-page">
-    <div class="clip-hero">
-      <div class="clip-hero-icon">🔖</div>
-      <div class="clip-hero-title">Stash Clip</div>
-      <div class="clip-hero-sub">Save any page to Stash with one tap — no typing needed.</div>
+
+```
+<!-- Stash Clip section -->
+<div class="settings-section-label">🔖 Stash Clip</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 1</div><div class="clip-card-title">Copy the code</div></div>
+  <div class="clip-code" id="clipCode"></div>
+  <button class="btn btn-primary" id="copyBtn" style="width:100%;height:42px;justify-content:center">⎘ &nbsp;Copy Code</button>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 2</div><div class="clip-card-title">Create a bookmark</div></div>
+  <div class="clip-steps">
+    <div class="clip-step"><div class="clip-icon">↑</div><span>Tap the <strong>Share button</strong> in Safari (bottom toolbar)</span></div>
+    <div class="clip-step"><div class="clip-icon">＋</div><span>Tap <strong>"Add Bookmark"</strong></span></div>
+    <div class="clip-step"><div class="clip-icon">✎</div><span>Name it <strong>"Stash It"</strong> → Save</span></div>
+  </div>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 3</div><div class="clip-card-title">Replace the URL</div></div>
+  <div class="clip-steps">
+    <div class="clip-step"><div class="clip-icon">📖</div><span>Open <strong>Bookmarks</strong> in Safari</span></div>
+    <div class="clip-step"><div class="clip-icon">←</div><span>Swipe left on <strong>"Stash It"</strong> → Edit</span></div>
+    <div class="clip-step"><div class="clip-icon">⌫</div><span><strong>Clear</strong> the URL field completely</span></div>
+    <div class="clip-step"><div class="clip-icon">⎘</div><span><strong>Paste</strong> the code from Step 1 → Done</span></div>
+  </div>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge done">Step 4</div><div class="clip-card-title">Test it!</div></div>
+  <div class="clip-body">Browse any page → open Bookmarks → tap <strong>"Stash It"</strong>. You'll see <em style="color:var(--accent)">"Page stashed ✓"</em>.</div>
+</div>
+<div class="clip-card clip-card-warn">
+  <div style="font-size:18px">⚠️</div>
+  <div class="clip-body"><strong>Use Stash in Safari</strong> — not the home screen icon. iOS stores data separately, so clips only appear in the Safari version.</div>
+</div>
+
+<!-- Maintenance section -->
+<div class="settings-section-label" style="padding-top:8px">🛠 Maintenance</div>
+<div class="clip-card" style="cursor:pointer" id="findDupsBtn">
+  <div class="clip-head">
+    <div class="clip-badge" style="background:#2a1a2e;color:#C77DFF">🔍</div>
+    <div>
+      <div class="clip-card-title">Find duplicates</div>
+      <div class="clip-body" style="margin-top:3px">Scan your stash for duplicate URLs or titles and resolve them.</div>
     </div>
-    <div class="clip-card">
-      <div class="clip-head"><div class="clip-badge">Step 1</div><div class="clip-card-title">Copy the code</div></div>
-      <div class="clip-code" id="clipCode"></div>
-      <button class="btn btn-primary" id="copyBtn" style="width:100%;height:42px;justify-content:center">⎘ &nbsp;Copy Code</button>
-    </div>
-    <div class="clip-card">
-      <div class="clip-head"><div class="clip-badge">Step 2</div><div class="clip-card-title">Create a bookmark</div></div>
-      <div class="clip-steps">
-        <div class="clip-step"><div class="clip-icon">↑</div><span>Tap the <strong>Share button</strong> in Safari (bottom toolbar)</span></div>
-        <div class="clip-step"><div class="clip-icon">＋</div><span>Tap <strong>"Add Bookmark"</strong></span></div>
-        <div class="clip-step"><div class="clip-icon">✎</div><span>Name it <strong>"Stash It"</strong> → Save</span></div>
-      </div>
-    </div>
-    <div class="clip-card">
-      <div class="clip-head"><div class="clip-badge">Step 3</div><div class="clip-card-title">Replace the URL</div></div>
-      <div class="clip-steps">
-        <div class="clip-step"><div class="clip-icon">📖</div><span>Open <strong>Bookmarks</strong> in Safari</span></div>
-        <div class="clip-step"><div class="clip-icon">←</div><span>Swipe left on <strong>"Stash It"</strong> → Edit</span></div>
-        <div class="clip-step"><div class="clip-icon">⌫</div><span><strong>Clear</strong> the URL field completely</span></div>
-        <div class="clip-step"><div class="clip-icon">⎘</div><span><strong>Paste</strong> the code from Step 1 → Done</span></div>
-      </div>
-    </div>
-    <div class="clip-card">
-      <div class="clip-head"><div class="clip-badge done">Step 4</div><div class="clip-card-title">Test it!</div></div>
-      <div class="clip-body">Browse any page → open Bookmarks → tap <strong>"Stash It"</strong>. You'll see <em style="color:var(--accent)">"Page stashed ✓"</em>.</div>
-    </div>
-    <div class="clip-card clip-card-warn">
-      <div style="font-size:18px">⚠️</div>
-      <div class="clip-body"><strong>Use Stash in Safari</strong> — not the home screen icon. iOS stores data separately, so clips only appear in the Safari version.</div>
+  </div>
+</div>
+<div class="clip-card" style="cursor:pointer" id="bulkDeleteBtn">
+  <div class="clip-head">
+    <div class="clip-badge" style="background:#2a1010;color:#FF6B6B">🗑</div>
+    <div>
+      <div class="clip-card-title">Bulk delete</div>
+      <div class="clip-body" style="margin-top:3px">Select multiple items and delete them all at once.</div>
     </div>
   </div>
 </div>
 
+<!-- Danger zone -->
+<div class="settings-section-label" style="padding-top:8px">⚠️ Danger Zone</div>
+<div class="clip-card" style="border-color:#3a1010;background:#1a0a0a">
+  <div class="clip-body" style="margin-bottom:12px">Permanently delete all your stashed items. This cannot be undone.</div>
+  <button class="btn" id="clearAllBtn" style="background:var(--danger);color:#fff;width:100%;height:42px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif">Delete All Items</button>
+</div>
+```
+
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+<div class="page" id="page-share">
+  <div class="clip-page">
+
+```
+<div class="settings-section-label">📥 Import</div>
+
+<div class="clip-card" style="cursor:pointer" id="importBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#1a2e10;width:38px;height:38px;border-radius:10px;font-size:18px">📥</div>
+    <div>
+      <div class="clip-card-title">Import backup</div>
+      <div class="clip-body" style="margin-top:3px">Restore items from a Stash JSON backup file.</div>
+    </div>
+  </div>
+</div>
+
+<div class="clip-card" style="cursor:pointer" id="importBookmarksBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#0a1a2e;width:38px;height:38px;border-radius:10px;font-size:18px">🔖</div>
+    <div>
+      <div class="clip-card-title">Import bookmarks</div>
+      <div class="clip-body" style="margin-top:3px">Import from Chrome, Safari, Firefox or Edge — folders become tags.</div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section-label" style="padding-top:8px">📤 Export</div>
+
+<div class="clip-card" style="cursor:pointer" id="exportBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#1c1a0a;width:38px;height:38px;border-radius:10px;font-size:18px">📤</div>
+    <div>
+      <div class="clip-card-title">Export</div>
+      <div class="clip-body" style="margin-top:3px">Save all your items as a JSON file — use as a backup or to move to another device.</div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
 
 <script>
 const STASH_URL=location.href.split('?')[0].replace(/#.*$/,'');
@@ -478,14 +696,9 @@ document.querySelectorAll(".tab").forEach(tab=>{
     $("page-"+tab.dataset.tab).classList.add("active");
     const onItems=tab.dataset.tab==="items";
     $("toggleFormBtn").style.display=onItems?"":"none";
-    $("menuBtn").style.display=onItems?"":"none";
-    $("dropdown").classList.remove("open");
   });
 });
-
 // Menu
-$("menuBtn").addEventListener("click",e=>{e.stopPropagation();$("dropdown").classList.toggle("open")});
-document.addEventListener("click",()=>$("dropdown").classList.remove("open"));
 
 // Form toggle
 $("toggleFormBtn").addEventListener("click",()=>{
@@ -657,7 +870,7 @@ $("editSave").addEventListener("click",()=>{
   showToast("Saved ✓");
 });
 $("editCancel").addEventListener("click",closeEdit);
-$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
+$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("dupScanSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
 
 $("searchInput").addEventListener("input",render);
 $("sortSelect").addEventListener("change",render);
@@ -670,8 +883,123 @@ $("exportBtn").addEventListener("click",()=>{
   showToast("Exported!");
 });
 
-// Import Stash backup
-$("importBtn").addEventListener("click",()=>{$("dropdown").classList.remove("open");$("importFile").click()});
+// Clear all
+$("clearAllBtn").addEventListener("click",()=>{
+  if(confirm("Delete ALL items? This cannot be undone.")){
+    items=[];save();render();showToast("All items deleted");
+  }
+});
+
+// Bulk delete
+let bulkMode=false,bulkSelected=new Set();
+$("bulkDeleteBtn").addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelector(".tab[data-tab='items']").classList.add("active");
+  $("page-items").classList.add("active");
+  $("toggleFormBtn").style.display="";
+  
+  bulkMode=true;bulkSelected=new Set();
+  render();
+  showToast("Tap cards to select, then delete");
+});
+$("bulkDeleteConfirm").addEventListener("click",()=>{
+  if(!bulkSelected.size)return;
+  items=items.filter(i=>!bulkSelected.has(i.id));
+  save();bulkMode=false;bulkSelected=new Set();
+  $("bulkBar").style.display="none";
+  render();showToast(`Deleted ✓`);
+});
+$("bulkCancel").addEventListener("click",()=>{
+  bulkMode=false;bulkSelected=new Set();
+  $("bulkBar").style.display="none";
+  render();
+});
+let dupGroups=[],dupGroupIdx=0;
+
+function findDupGroups(){
+  const groups=[];
+  const seen=new Set();
+  items.forEach((a,i)=>{
+    if(seen.has(a.id))return;
+    const matches=items.slice(i+1).filter(b=>{
+      if(seen.has(b.id))return false;
+      const sameUrl=a.url&&b.url&&a.url===b.url;
+      const sameTitle=a.title.toLowerCase().trim()===b.title.toLowerCase().trim();
+      return sameUrl||sameTitle;
+    });
+    if(matches.length){
+      matches.forEach(b=>seen.add(b.id));
+      seen.add(a.id);
+      groups.push([a,matches[0]]);
+    }
+  });
+  return groups;
+}
+
+function openDupScanner(){
+  
+  dupGroups=findDupGroups();
+  dupGroupIdx=0;
+  $("dupScanSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+  showDupScanGroup();
+}
+
+function showDupScanGroup(){
+  if(!dupGroups.length){
+    $("dupScanStatus").textContent="No duplicates found — your Stash is clean! 🎉";
+    $("dupScanGroup").style.display="none";
+    $("dupScanClose").style.display="block";
+    return;
+  }
+  if(dupGroupIdx>=dupGroups.length){
+    $("dupScanStatus").textContent=`All done! Reviewed ${dupGroups.length} duplicate pair${dupGroups.length!==1?"s":""}.`;
+    $("dupScanGroup").style.display="none";
+    $("dupScanClose").style.display="block";
+    return;
+  }
+  const [a,b]=dupGroups[dupGroupIdx];
+  $("dupScanCounter").textContent=`${dupGroupIdx+1} of ${dupGroups.length}`;
+  $("dupScanTitleA").textContent=cleanTitle(a.title);
+  $("dupScanTagsA").textContent=a.tags.length?"🏷 "+a.tags.join(", "):"No tags";
+  $("dupScanDescA").textContent=a.description||"No description";
+  $("dupScanTitleB").textContent=cleanTitle(b.title);
+  $("dupScanTagsB").textContent=b.tags.length?"🏷 "+b.tags.join(", "):"No tags";
+  $("dupScanDescB").textContent=b.description||"No description";
+  $("dupScanStatus").textContent="";
+  $("dupScanGroup").style.display="flex";
+  $("dupScanClose").style.display="none";
+}
+
+function nextDupGroup(){dupGroupIdx++;showDupScanGroup();}
+
+$("findDupsBtn").addEventListener("click",openDupScanner);
+
+$("dupScanMerge").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  const mergedTags=[...new Set([...a.tags,...b.tags])];
+  const mergedDesc=[a.description,b.description].filter(Boolean).join(" · ");
+  items=items.filter(i=>i.id!==b.id);
+  items=items.map(i=>i.id===a.id?{...i,tags:mergedTags,description:mergedDesc}:i);
+  save();render();showToast("Merged ✓");nextDupGroup();
+});
+$("dupScanKeepA").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  items=items.filter(i=>i.id!==b.id);
+  save();render();showToast("Kept A ✓");nextDupGroup();
+});
+$("dupScanKeepB").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  items=items.filter(i=>i.id!==a.id);
+  save();render();showToast("Kept B ✓");nextDupGroup();
+});
+$("dupScanSkip").addEventListener("click",()=>nextDupGroup());
+$("dupScanClose").addEventListener("click",()=>{
+  $("dupScanSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+});
+$("importBtn").addEventListener("click",()=>{$("importFile").click()});
 $("importFile").addEventListener("change",function(){
   const file=this.files[0];if(!file)return;
   const reader=new FileReader();
@@ -692,7 +1020,7 @@ $("importFile").addEventListener("change",function(){
 
 // Import browser bookmarks
 $("importBookmarksBtn").addEventListener("click",()=>{
-  $("dropdown").classList.remove("open");
+  
   $("bmkSheet").classList.add("show");
   $("sheetOverlay").classList.add("show");
 });
@@ -875,10 +1203,17 @@ function render(){
     }
     card.appendChild(topRow);
 
-    // Make whole card clickable — URL opens link, note opens edit
+    // Make whole card clickable — bulk mode selects, otherwise URL opens or edit
     card.style.cursor="pointer";
     card.addEventListener("click",e=>{
       if(e.target.classList.contains("card-tag"))return;
+      if(bulkMode){
+        if(bulkSelected.has(item.id)){bulkSelected.delete(item.id);card.style.opacity="1";card.style.outline="none";}
+        else{bulkSelected.add(item.id);card.style.opacity=".5";card.style.outline="2px solid var(--danger)";}
+        $("bulkBar").style.display=bulkSelected.size?"flex":"none";
+        $("bulkCount").textContent=`${bulkSelected.size} selected`;
+        return;
+      }
       if(isUrl&&item.url)window.open(item.url,"_blank","noopener");
       else openEdit(item);
     });
@@ -921,9 +1256,15 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v40";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v61";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
+
+// Splash — dismiss after box animation completes
+setTimeout(()=>{
+  const s=document.getElementById("splash");
+  if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
+},2200);
 
 render();
 </script>
