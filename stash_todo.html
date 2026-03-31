@@ -400,8 +400,10 @@ const DEFAULT_TODOS = [
   { id: 53, text: "Tag suggestions — existing tags as tappable colour pills in edit sheet, type new ones", done: true, cat: "build" },
 
   // ── To Build — Security ──
-  { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
-  { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
+  { id: 71, text: "OPFS + AES-256 encryption — data stored encrypted in OPFS, localStorage kept as shadow fallback, auto-migrates on first load, device-bound key via PBKDF2", done: true, cat: "build" },
+  { id: 72, text: "AES-256 encryption — implemented as part of id:71, encrypted with PBKDF2-derived key bound to origin", done: true, cat: "build" },
+  { id: 41, text: "PIN lock for the app — protects against casual physical access", done: false, cat: "build" },
+  { id: 42, text: "Optional localStorage encryption with user passphrase — superseded by id:72 above", done: false, cat: "idea" },
 
   // ── To Build — Branding ──
   { id: 62, text: "Animated app icon — isometric box with lid closing and tape sealing", done: true, cat: "build" },
@@ -410,16 +412,16 @@ const DEFAULT_TODOS = [
   { id: 12, text: "Optional AI tagging — user brings their own API key", done: false, cat: "idea" },
   { id: 13, text: "Smart search by meaning (semantic search)", done: false, cat: "idea" },
   { id: 14, text: "Auto-summary of saved web pages", done: false, cat: "idea" },
-  { id: 33, text: "iOS 7-day localStorage expiry warning — nudge users to export", done: false, cat: "idea" },
+  { id: 33, text: "iOS browser storage expiry — iOS can clear browser storage after 7 days of no use. Daily backup prompt handles this. UI updated to say 'Browser storage can be cleared by iOS'", done: true, cat: "build" },
   { id: 34, text: "Read-only shareable link for a tag or collection", done: false, cat: "idea" },
   { id: 35, text: "Market positioning — 'free private Obsidian for saving, not writing'", done: false, cat: "idea" },
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v23") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v26") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v23", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v26", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
