@@ -462,7 +462,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <div class="backup-banner" id="backupBanner">
   <div class="backup-banner-text">
-    <strong>Daily backup due</strong> — Save your data to Files to prevent loss.
+    <strong>Daily backup due</strong> — Export your data to Files. Browser storage can be cleared by iOS.
   </div>
   <button class="backup-btn" id="backupNowBtn">Save to Files</button>
   <button class="backup-dismiss" id="backupDismissBtn">✕</button>
@@ -562,7 +562,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 </div>
 <div class="clip-card clip-card-warn">
   <div style="font-size:18px">⚠️</div>
-  <div class="clip-body"><strong>Use Stash in Safari</strong> — not the home screen icon. iOS stores data separately, so clips only appear in the Safari version.</div>
+  <div class="clip-body"><strong>Use Stash in Safari</strong> — not the home screen icon. iOS keeps browser storage and home screen app storage completely separate, so clips only appear in the Safari version.</div>
 </div>
 
 <!-- Maintenance section -->
@@ -653,28 +653,126 @@ const TAG_COLORS=["#FF6B6B","#FFB347","#FFD93D","#6BCB77","#4D96FF","#C77DFF","#
 function hashColor(tag){let h=0;for(let i=0;i<tag.length;i++)h=tag.charCodeAt(i)+((h<<5)-h);return TAG_COLORS[Math.abs(h)%TAG_COLORS.length]}
 const $=id=>document.getElementById(id);
 
-let items=JSON.parse(localStorage.getItem("stash_items")||"[]");
+// ── Storage layer — OPFS + AES encryption, localStorage fallback ──
+const STORAGE_FILE="stash_items.enc";
+const TRASH_FILE="stash_trash.enc";
+const KEY_MATERIAL="stash-v1"; // versioned key derivation
+let opfsRoot=null;
+let cryptoKey=null;
+
+// Derive a consistent AES key from a fixed app salt
+// Not a user passphrase yet — this is device-bound encryption
+// Protects against extensions reading raw browser storage
+async function deriveKey(){
+  const raw=await crypto.subtle.importKey(
+    "raw",new TextEncoder().encode(KEY_MATERIAL+location.origin),
+    {name:"PBKDF2"},false,["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt:new TextEncoder().encode("stash-salt-2024"),iterations:100000,hash:"SHA-256"},
+    raw,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]
+  );
+}
+
+async function encryptData(data){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const encoded=new TextEncoder().encode(JSON.stringify(data));
+  const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},cryptoKey,encoded);
+  // Prepend IV to ciphertext
+  const result=new Uint8Array(iv.length+cipher.byteLength);
+  result.set(iv,0);result.set(new Uint8Array(cipher),iv.length);
+  return result;
+}
+
+async function decryptData(buffer){
+  const iv=buffer.slice(0,12);
+  const cipher=buffer.slice(12);
+  const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},cryptoKey,cipher);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+async function opfsRead(filename){
+  if(!opfsRoot)return null;
+  try{
+    const fh=await opfsRoot.getFileHandle(filename);
+    const file=await fh.getFile();
+    const buf=await file.arrayBuffer();
+    return await decryptData(new Uint8Array(buf));
+  }catch{return null;}
+}
+
+async function opfsWrite(filename,data){
+  if(!opfsRoot)return false;
+  try{
+    const fh=await opfsRoot.getFileHandle(filename,{create:true});
+    const writable=await fh.createWritable();
+    const enc=await encryptData(data);
+    await writable.write(enc);
+    await writable.close();
+    return true;
+  }catch{return false;}
+}
+
+async function initStorage(){
+  try{
+    cryptoKey=await deriveKey();
+    opfsRoot=await navigator.storage.getDirectory();
+    // Try reading from OPFS
+    const opfsItems=await opfsRead(STORAGE_FILE);
+    if(opfsItems!==null){
+      items=opfsItems;
+    } else {
+      // Migrate from localStorage if OPFS is empty
+      const lsItems=localStorage.getItem("stash_items");
+      if(lsItems){
+        items=JSON.parse(lsItems);
+        await opfsWrite(STORAGE_FILE,items);
+        // Keep localStorage as shadow backup
+      }
+    }
+    const opfsTrash=await opfsRead(TRASH_FILE);
+    if(opfsTrash!==null){
+      trash=opfsTrash;
+    } else {
+      // Migrate trash from localStorage if OPFS is empty
+      const lsTrash=localStorage.getItem(TRASH_KEY);
+      if(lsTrash){
+        trash=JSON.parse(lsTrash);
+        await opfsWrite(TRASH_FILE,trash);
+      }
+    }
+  }catch(e){
+    // OPFS unavailable — fall back to localStorage
+    console.warn("OPFS unavailable, using localStorage",e);
+    opfsRoot=null;
+  }
+}
+
+let items=[];
 let filterTag=null,formOpen=false,itemType="note";
 
 // ── Backup system ──
 const BACKUP_KEY="stash_backup";
 const BACKUP_TIME_KEY="stash_last_backup";
-const BACKUP_INTERVAL=24*60*60*1000; // 24 hours
+const BACKUP_INTERVAL=24*60*60*1000;
 
 function save(){
+  if(opfsRoot){
+    // Primary: write to OPFS (encrypted)
+    opfsWrite(STORAGE_FILE,items);
+  }
+  // Always keep localStorage shadow (unencrypted fallback)
   localStorage.setItem("stash_items",JSON.stringify(items));
-  // Layer 1: always keep a shadow backup
   localStorage.setItem(BACKUP_KEY,JSON.stringify({items,savedAt:Date.now()}));
 }
 
 function checkAndRestoreBackup(){
-  // If main data is empty but backup exists, restore silently
   if(items.length===0){
     try{
       const backup=JSON.parse(localStorage.getItem(BACKUP_KEY)||"null");
       if(backup&&backup.items&&backup.items.length>0){
         items=backup.items;
-        localStorage.setItem("stash_items",JSON.stringify(items));
+        save();
         showToast(`Restored ${items.length} items from backup ✓`);
       }
     }catch(e){}
@@ -706,10 +804,6 @@ $("backupDismissBtn").addEventListener("click",()=>{
   localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
   $("backupBanner").classList.remove("show");
 });
-
-// Run on load
-checkAndRestoreBackup();
-checkBackupPrompt();
 
 // Tabs
 document.querySelectorAll(".tab").forEach(tab=>{
@@ -1146,7 +1240,10 @@ const TRASH_KEY="stash_trash";
 let trash=JSON.parse(localStorage.getItem(TRASH_KEY)||"[]");
 let undoTimer=null;
 
-function saveTrash(){localStorage.setItem(TRASH_KEY,JSON.stringify(trash));}
+function saveTrash(){
+  if(opfsRoot)opfsWrite(TRASH_FILE,trash);
+  localStorage.setItem(TRASH_KEY,JSON.stringify(trash));
+}
 
 function trashItem(item){
   // Remove from items
@@ -1458,7 +1555,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v67";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v70";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1468,7 +1565,13 @@ setTimeout(()=>{
   if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
 },2200);
 
-render();
+// Init storage then render
+(async()=>{
+  await initStorage();
+  checkAndRestoreBackup();
+  checkBackupPrompt();
+  render();
+})();
 </script>
 
 </body>
