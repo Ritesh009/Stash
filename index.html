@@ -897,9 +897,9 @@ $("editSave").addEventListener("click",()=>{
 $("editCancel").addEventListener("click",closeEdit);
 $("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("dupScanSheet").classList.remove("show");$("restoreSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
 
-$("searchInput").addEventListener("input",render);
-$("sortSelect").addEventListener("change",render);
-$("typeFilter").addEventListener("change",render);
+$("searchInput").addEventListener("input",()=>{$("itemList")._page=0;$("itemList")._append=false;render()});
+$("sortSelect").addEventListener("change",()=>{$("itemList")._page=0;render()});
+$("typeFilter").addEventListener("change",()=>{$("itemList")._page=0;render()});
 
 // Export
 $("exportBtn").addEventListener("click",()=>{
@@ -1337,11 +1337,24 @@ function render(){
 
   if(!res.length){list.innerHTML=`<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match."}</div>`;return}
 
-  list.innerHTML="";
+  // Pagination — show PAGE_SIZE items, append more on demand
+  const PAGE_SIZE=50;
+  const page=list._page||0;
+  const isAppend=list._append||false;
+  if(!isAppend){list.innerHTML="";list._page=0;}
+  const start=isAppend?page*PAGE_SIZE:0;
+  const slice=res.slice(0,start+PAGE_SIZE);
+  list._append=false;
+
+  if(!isAppend){list.innerHTML="";}
+  // Remove old load more button if exists
+  const oldBtn=list.querySelector(".load-more-btn");
+  if(oldBtn)oldBtn.remove();
+
   const grouped=srt==="newest"||srt==="oldest";
   let lastGrp="";
 
-  res.forEach(item=>{
+  slice.forEach(item=>{
     if(grouped){
       const g=dateGroup(item.createdAt);
       if(g!==lastGrp){lastGrp=g;const l=document.createElement("div");l.className="grp-label";l.textContent=g;list.appendChild(l)}
@@ -1422,6 +1435,21 @@ function render(){
 
     wrap.appendChild(card);addSwipe(wrap,card,item);list.appendChild(wrap);
   });
+
+  // Load more button if there are more items
+  if(slice.length < res.length){
+    const remaining=res.length-slice.length;
+    const btn=document.createElement("button");
+    btn.className="load-more-btn";
+    btn.textContent=`Load ${Math.min(PAGE_SIZE,remaining)} more  ·  ${remaining} remaining`;
+    btn.style.cssText="width:100%;padding:14px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--muted);font-size:13px;font-family:var(--font);cursor:pointer;margin-top:4px;letter-spacing:-.01em;transition:background .15s";
+    btn.addEventListener("click",()=>{
+      list._page=(list._page||0)+1;
+      list._append=true;
+      render();
+    });
+    list.appendChild(btn);
+  }
 }
 
 function pill(label,active){
@@ -1430,7 +1458,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v65";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v67";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
