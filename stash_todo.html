@@ -2,539 +2,1418 @@
 
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Todo"/>
-  <meta name="theme-color" content="#F7F4EF"/>
-  <title>Todo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Stash" />
+  <meta name="theme-color" content="#0d0d0f" />
+  <title>Stash</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d0d10'/><polygon points='50,54 84,36 84,74 50,92' fill='%23c8c2b6'/><polygon points='16,36 50,54 50,92 16,74' fill='%23e8e2d6'/><polygon points='16,36 50,18 84,36 50,54' fill='%23f0ece4'/><polygon points='50,54 84,36 84,42 50,60' fill='%23b0aa9e'/><polygon points='16,36 50,54 50,60 16,42' fill='%23d4cec4'/></svg>"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230d0d10'/><polygon points='90,98 152,64 152,134 90,166' fill='%23c8c2b6'/><polygon points='28,64 90,98 90,166 28,134' fill='%23e8e2d6'/><polygon points='28,64 90,32 152,64 90,98' fill='%23f0ece4'/><polygon points='90,98 152,64 152,76 90,110' fill='%23b0aa9e'/><polygon points='28,64 90,98 90,110 28,76' fill='%23d4cec4'/></svg>"/>
   <style>
     :root {
-      --bg: #F7F4EF;
-      --surface: #EFEAE2;
-      --border: #DDD8CF;
-      --text: #1a1814;
-      --muted: #9C9688;
-      --done: #B8B2A8;
-      --accent: #2D5016;
-      --accent-light: #4a7c2a;
-      --danger: #C0392B;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bot: env(safe-area-inset-bottom, 0px);
+      --bg:#0d0d10; --surface:#141418; --border:#222228; --text:#f0ece4;
+      --muted:#72727c; --dim:#2e2e36; --accent:#e8e2d6; --danger:#e05c5c;
+      --link:#5b9cf6; --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+      --radius:12px; --radius-sm:8px; --radius-lg:16px;
+      --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
     }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
 ```
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* ── Header ── */
+header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
+.logo{font-size:22px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
+.logo-sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  min-height: 100vh;
-  overscroll-behavior: none;
-}
+/* ── Buttons ── */
+.btn{border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;border-radius:var(--radius-sm);transition:opacity .15s;padding:0 14px;height:34px;display:inline-flex;align-items:center;white-space:nowrap;letter-spacing:-.01em}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:active{opacity:.7}
+.btn-primary{background:var(--text);color:var(--bg);font-weight:600}
+.btn-primary:active{opacity:.8}
 
-header {
-  padding: calc(var(--safe-top) + 32px) 24px 20px;
-  border-bottom: 1px solid var(--border);
-}
+/* ── Dropdown ── */
+.menu-wrap{position:relative}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#18181d;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;z-index:200;min-width:210px;box-shadow:0 20px 50px rgba(0,0,0,.7);display:none}
+.dropdown.open{display:block;animation:fadeDown .15s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.dd-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;width:100%;border:none;background:none;text-align:left;transition:background .1s}
+.dd-item:active{background:var(--dim)}
+.dd-item-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.dd-item-title{font-size:13px;color:var(--text);font-weight:500;letter-spacing:-.01em}
+.dd-item-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.dd-divider{height:1px;background:var(--border);margin:3px 0}
 
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
+/* ── Tabs — iOS segmented control ── */
+.tabs{display:flex;background:var(--bg);padding:10px 16px;border-bottom:1px solid var(--border)}
+.tab-group{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:2px;width:100%}
+.tab{flex:1;padding:7px 12px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;font-family:var(--font);border-radius:8px;transition:all .2s;text-align:center;letter-spacing:-.01em}
+.tab.active{background:var(--bg);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
-h1 {
-  font-family: 'Lora', serif;
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  line-height: 1;
-}
+/* ── Controls ── */
+.controls{padding:12px 16px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+input[type=text],input[type=search],input[type=url],textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:15px;font-family:var(--font);outline:none;-webkit-appearance:none}
+input[type=search]{padding-left:40px;border-radius:22px;background:#1a1a20;border-color:transparent;font-size:14px}
+input[type=search]:focus{border-color:var(--border);background:var(--surface)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,textarea:focus{border-color:var(--dim)}
+textarea{resize:none;line-height:1.5}
+.ctrl-row{display:flex;gap:8px;align-items:center}
+select{background:transparent;border:none;color:var(--muted);padding:4px 4px;font-size:12px;font-family:var(--font);-webkit-appearance:none;appearance:none;cursor:pointer;flex-shrink:0}
+.count{margin-left:auto;font-size:12px;color:var(--dim);white-space:nowrap}
 
-.subtitle {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 5px;
-  letter-spacing: 0.04em;
-}
+/* ── Tag bar ── */
+.tag-bar{padding:10px 16px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.tag-bar::-webkit-scrollbar{display:none}
+.tag-bar.hidden{display:none}
+.tag-pill{flex-shrink:0;border:1px solid var(--border);background:transparent;color:var(--muted);padding:4px 11px;border-radius:20px;font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.01em}
+.tag-pill.active{background:var(--text);color:var(--bg);border-color:var(--text)}
 
-.progress-wrap {
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* ── Form ── */
+.form-panel{border-bottom:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--surface);animation:fadeDown .2s ease}
+.form-panel.hidden{display:none}
+label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:600}
+.form-error{font-size:12px;color:var(--danger)}
+.form-error.hidden{display:none}
 
-.progress-bar {
-  flex: 1;
-  height: 3px;
-  background: var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
+/* ── List ── */
+.list{padding:10px 12px calc(28px + var(--safe-bot));display:flex;flex-direction:column;gap:2px;width:100%}
+.empty{text-align:center;color:var(--muted);font-size:14px;padding:80px 20px;line-height:2}
+.grp-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:14px 4px 6px}
 
-.progress-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 10px;
-  transition: width 0.4s ease;
-}
+/* ── Cards — borderless, elevation-based ── */
+.card-wrap{position:relative;overflow:hidden;border-radius:var(--radius);-webkit-transform:translateZ(0);transform:translateZ(0);width:100%}
+.del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:#c0392b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.edit-bg{position:absolute;left:0;top:0;bottom:0;width:80px;background:#1a3a6a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.card{position:relative;z-index:1;background:var(--surface);border:none;border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:5px;animation:cardIn .18s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
+.card:active{opacity:.85}
+@keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.card-title{font-size:14px;color:var(--text);line-height:1.4;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.02em}
+.card-tags-inline{display:flex;gap:4px;flex-shrink:0;flex-wrap:nowrap;max-width:45%;overflow:hidden}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.5;letter-spacing:-.01em}
+.card-tag{font-size:10px;padding:2px 7px;border-radius:20px;cursor:pointer;border:none;line-height:1.6;letter-spacing:.01em;font-weight:500;opacity:.85}
+.card-date{font-size:10px;color:var(--dim)}
+.card-url-row{display:flex;align-items:center;gap:6px}
+.card-fav{width:13px;height:13px;border-radius:3px;flex-shrink:0;object-fit:contain;opacity:.8}
+.card-url-info{display:flex;align-items:center;gap:3px;min-width:0}
+.card-host{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-path{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.progress-label {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  letter-spacing: 0.04em;
-}
+.page{display:none}.page.active{display:block}
 
-/* Filter tabs */
-.filters {
-  display: flex;
-  gap: 0;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.filters::-webkit-scrollbar { display: none; }
+/* ── Settings / Clip page ── */
+.clip-page{padding:16px;padding-bottom:calc(40px + var(--safe-bot));display:flex;flex-direction:column;gap:10px}
+.clip-card{background:var(--surface);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.clip-card-warn{flex-direction:row;align-items:flex-start;gap:10px;background:#1a1208}
+.clip-head{display:flex;align-items:center;gap:10px}
+.clip-badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--dim);color:var(--muted);padding:3px 8px;border-radius:20px;white-space:nowrap}
+.clip-badge.done{background:#1a2e10;color:#6BCB77}
+.clip-card-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.02em}
+.clip-body{font-size:13px;color:var(--muted);line-height:1.7}
+.clip-body strong{color:var(--text);font-weight:500}
+.clip-code{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;color:#7eb8ff;font-family:monospace;word-break:break-all;line-height:1.6;user-select:all;-webkit-user-select:all}
+.clip-steps{display:flex;flex-direction:column;gap:8px}
+.clip-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.4}
+.clip-step strong{color:var(--text)}
+.clip-icon{width:26px;height:26px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--muted)}
+.settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px}
 
-.filter-btn {
-  border: none;
-  background: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 6px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-.filter-btn.active {
-  background: var(--accent);
-  color: #fff;
-}
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;pointer-events:auto}
 
-/* Add input */
-.add-wrap {
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
+/* ── Sheets ── */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.sheet-overlay.show{display:block}
+.edit-sheet,.dup-sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:#1a1a20;border-top:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px 20px calc(28px + var(--safe-bot));display:none;flex-direction:column;gap:14px;animation:sheetUp .3s cubic-bezier(.32,.72,0,1)}
+.edit-sheet.show,.dup-sheet.show{display:flex}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:32px;height:4px;background:var(--dim);border-radius:4px;margin:0 auto -6px}
+.sheet-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;display:block}
+.sheet-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:15px;font-family:var(--font);outline:none;-webkit-appearance:none}
+.sheet-input::placeholder{color:var(--muted)}
+.sheet-input:focus{border-color:var(--dim)}
+.sheet-row{display:flex;gap:8px}
+.sheet-save{flex:1;background:var(--text);color:var(--bg);border:none;height:46px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);letter-spacing:-.01em}
+.sheet-cancel{background:var(--surface);border:none;color:var(--muted);padding:0 16px;height:46px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;font-family:var(--font)}
+.dup-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dup-cards{display:flex;gap:8px}
+.dup-card{flex:1;background:var(--bg);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.dup-card-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dup-card-title{font-size:13px;color:var(--text);font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.dup-card-tags{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dup-card-desc{font-size:10px;color:var(--dim);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dup-actions{display:flex;flex-direction:column;gap:8px}
+.dup-btn{width:100%;height:46px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);border:none;transition:opacity .15s;letter-spacing:-.01em}
+.dup-btn:active{opacity:.7}
+.dup-btn-merge{background:var(--text);color:var(--bg);font-weight:600}
+.dup-btn-replace{background:var(--surface);color:var(--text)}
+.dup-btn-both{background:transparent;border:1px solid var(--border)!important;color:var(--muted)}
+.dup-btn-cancel{background:transparent;color:var(--dim);font-size:12px;height:36px}
 
-.add-input {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: 'DM Sans', sans-serif;
-  outline: none;
-  -webkit-appearance: none;
-}
-.add-input::placeholder { color: var(--muted); }
-.add-input:focus { border-color: var(--accent); }
+/* ── Backup banner ── */
+.backup-banner{display:none;background:#111a0a;border-bottom:1px solid #1a2e10;padding:11px 16px;gap:10px;align-items:center}
+.backup-banner.show{display:flex}
+.backup-banner-text{flex:1;font-size:13px;color:#7ab85a;line-height:1.4}
+.backup-banner-text strong{color:#98d475}
+.backup-btn{background:#1a3012;border:none;color:#98d475;padding:7px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.backup-dismiss{background:none;border:none;color:#2e4a20;cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
 
-.add-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: opacity 0.15s;
-  line-height: 1;
-}
-.add-btn:active { opacity: 0.8; }
+/* ── Tag suggestions ── */
+.tag-suggestions{display:flex;flex-wrap:wrap;gap:6px;min-height:10px}
+.tag-suggestion{border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 11px;border-radius:20px;font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap}
+.tag-suggestion.selected{color:var(--bg);border-color:transparent}
+.tag-suggestions-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px;display:block}
 
-/* List */
-.list {
-  padding: 12px 24px;
-  padding-bottom: calc(32px + var(--safe-bot));
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.empty {
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-  font-style: italic;
-  padding: 60px 20px;
-  font-family: 'Lora', serif;
-}
-
-.todo-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  animation: itemIn 0.2s ease;
-  position: relative;
-}
-.todo-item:last-child { border-bottom: none; }
-
-@keyframes itemIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.check-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-top: 1px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.check-btn.done {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.check-btn.done::after {
-  content: '';
-  width: 5px;
-  height: 9px;
-  border: 2px solid #fff;
-  border-top: none;
-  border-left: none;
-  transform: rotate(45deg) translateY(-1px);
-  display: block;
-}
-
-.todo-text {
-  flex: 1;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text);
-  transition: all 0.2s;
-  word-break: break-word;
-}
-.todo-text.done {
-  color: var(--done);
-  text-decoration: line-through;
-  text-decoration-color: var(--border);
-}
-
-.category-badge {
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 10px;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.del-btn {
-  background: none;
-  border: none;
-  color: var(--border);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 2px;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: color 0.15s;
-  margin-top: 2px;
-}
-.del-btn:active { color: var(--danger); }
-
-/* Section headers */
-.section-label {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 500;
-  padding: 16px 0 6px;
-}
-
-.clear-done {
-  background: none;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 4px 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.clear-done:active { color: var(--danger); }
+/* ── Splash screen ── */
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
 ```
 
   </style>
 </head>
 <body>
 
-<header>
-  <div class="header-top">
-    <div>
-      <h1>Stash Tasks</h1>
-      <div class="subtitle" id="dateLabel"></div>
+<!-- Splash screen -->
+
+<div id="splash">
+  <svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer group — box bounce after tape applied -->
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="0 0; 0 0; 0 0; 0 4; 0 -3; 0 1; 0 0"
+        keyTimes="0; 0.55; 0.60; 0.65; 0.70; 0.75; 1"
+        dur="1.8s"
+        fill="freeze"
+        calcMode="spline"
+        keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
+      />
+      <!-- Box body -->
+      <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
+      <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
+      <polygon points="48,54 82,36 82,42 48,60" fill="#b0aa9e"/>
+      <polygon points="14,36 48,54 48,60 14,42" fill="#d4cec4"/>
+      <!-- Lid — starts open, swings closed -->
+      <g>
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          values="-55 48 54; -55 48 54; 0 48 54; 0 48 54"
+          keyTimes="0; 0.15; 0.45; 1"
+          dur="1.8s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+        />
+        <animate attributeName="opacity" from="0" to="1" dur="0.1s" begin="0.1s" fill="freeze"/>
+        <polygon points="14,36 48,18 82,36 48,54" fill="#f0ece4"/>
+        <polygon points="26,31 48,20 70,31 48,42" fill="#ffffff" opacity=".1"/>
+      </g>
+      <!-- Tape strip — grows left to right after lid closes -->
+      <g opacity="0">
+        <polygon points="22,44 74,26 74,31 22,49" fill="#f5e97a" opacity=".75"/>
+        <polygon points="22,44 74,26 74,28 22,46" fill="#ffffff" opacity=".3"/>
+        <animateTransform
+          attributeName="transform"
+          type="scale"
+          values="0 1; 0 1; 1 1; 1 1"
+          keyTimes="0; 0.50; 0.72; 1"
+          dur="1.8s"
+          fill="freeze"
+          calcMode="spline"
+          keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+          transform-origin="22 44"
+        />
+        <animate
+          attributeName="opacity"
+          values="0; 0; 1; 1"
+          keyTimes="0; 0.50; 0.52; 1"
+          dur="1.8s"
+          fill="freeze"
+        />
+      </g>
+    </g>
+  </svg>
+  <div id="splash-label">Stash</div>
+</div>
+
+<!-- Edit sheet -->
+
+<div class="sheet-overlay" id="sheetOverlay"></div>
+<div class="edit-sheet" id="editSheet">
+  <div class="sheet-handle"></div>
+  <div>
+    <span class="sheet-label">Title</span>
+    <input class="sheet-input" id="editTitle" type="text" placeholder="Title"/>
+  </div>
+  <div>
+    <span class="sheet-label">Tags <span style="text-transform:none;letter-spacing:0;font-weight:300">(comma separated)</span></span>
+    <input class="sheet-input" id="editTags" type="text" placeholder="Type a new tag…"/>
+    <div style="margin-top:10px">
+      <span class="tag-suggestions-label">Your tags — tap to toggle</span>
+      <div class="tag-suggestions" id="tagSuggestions"></div>
     </div>
-    <button class="clear-done" id="clearDoneBtn">Clear done</button>
   </div>
-  <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-label" id="progressLabel">0 / 0</div>
+  <div>
+    <span class="sheet-label">Description</span>
+    <textarea class="sheet-input" id="editDesc" rows="2" placeholder="Optional notes…" style="resize:none;line-height:1.5"></textarea>
   </div>
-</header>
-
-<div class="filters">
-  <button class="filter-btn active" data-filter="all">All</button>
-  <button class="filter-btn" data-filter="fix">🔧 Fix</button>
-  <button class="filter-btn" data-filter="build">🏗️ Build</button>
-  <button class="filter-btn" data-filter="idea">💡 Idea</button>
-  <button class="filter-btn" data-filter="done">✅ Done</button>
+  <div class="sheet-row">
+    <button class="sheet-cancel" id="editCancel">Cancel</button>
+    <button class="sheet-save" id="editSave">Save Changes</button>
+  </div>
 </div>
 
-<div class="add-wrap">
-  <input class="add-input" id="addInput" type="text" placeholder="Add a task…" />
-  <button class="add-btn" id="addBtn">+</button>
+<!-- Duplicate sheet -->
+
+<div class="dup-sheet" id="dupSheet">
+  <div class="sheet-handle"></div>
+  <div class="dup-title">Already in your Stash</div>
+  <div class="dup-cards">
+    <div class="dup-card">
+      <div class="dup-card-label">Existing</div>
+      <div class="dup-card-title" id="dupExistingTitle"></div>
+      <div class="dup-card-tags" id="dupExistingTags"></div>
+      <div class="dup-card-desc" id="dupExistingDesc"></div>
+    </div>
+    <div class="dup-card" style="border-color:var(--link)33;background:#0a0f1a">
+      <div class="dup-card-label" style="color:var(--link)">New</div>
+      <div class="dup-card-title" id="dupNewTitle"></div>
+      <div class="dup-card-tags" id="dupNewTags"></div>
+      <div class="dup-card-desc" id="dupNewDesc"></div>
+    </div>
+  </div>
+  <div class="dup-actions">
+    <button class="dup-btn dup-btn-merge" id="dupMerge">✦ Merge — combine tags &amp; notes</button>
+    <button class="dup-btn dup-btn-replace" id="dupReplace">Replace existing with new</button>
+    <button class="dup-btn dup-btn-both" id="dupBoth">Keep both</button>
+    <button class="dup-btn dup-btn-cancel" id="dupCancel">Cancel — don't save</button>
+  </div>
 </div>
 
-<div class="list" id="todoList"></div>
+<!-- Bookmarks import sheet -->
+
+<div class="edit-sheet" id="bmkSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-family:Georgia,serif;font-size:17px;color:var(--accent);font-weight:600">Import Browser Bookmarks</div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.7">
+    Export your bookmarks from your browser first, then choose the file below. Folders become tags automatically.
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:500">How to export</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.8">
+      <strong style="color:var(--text)">Chrome</strong> — Bookmarks → Bookmark manager → ⋮ → Export bookmarks<br>
+      <strong style="color:var(--text)">Safari</strong> — File → Export Bookmarks<br>
+      <strong style="color:var(--text)">Firefox</strong> — Bookmarks → Manage Bookmarks → Import and Backup → Export<br>
+      <strong style="color:var(--text)">Edge</strong> — Favourites → ⋮ → Export favourites
+    </div>
+  </div>
+  <div class="sheet-row">
+    <button class="sheet-cancel" id="bmkSheetCancel">Cancel</button>
+    <button class="sheet-save" id="bmkSheetChoose" style="flex:1">Choose File</button>
+  </div>
+</div>
+
+<!-- Find Duplicates sheet -->
+
+<div class="edit-sheet" id="dupScanSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-family:Georgia,serif;font-size:17px;color:var(--accent);font-weight:600">Find Duplicates</div>
+  <div id="dupScanStatus" style="font-size:13px;color:var(--muted);line-height:1.6"></div>
+  <div id="dupScanGroup" style="display:none;flex-direction:column;gap:10px">
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:500">Duplicate group <span id="dupScanCounter"></span></div>
+    <div class="dup-cards">
+      <div class="dup-card">
+        <div class="dup-card-label">Item A</div>
+        <div class="dup-card-title" id="dupScanTitleA"></div>
+        <div class="dup-card-tags" id="dupScanTagsA"></div>
+        <div class="dup-card-desc" id="dupScanDescA"></div>
+      </div>
+      <div class="dup-card" style="border-color:var(--link)33;background:#0a0f1a">
+        <div class="dup-card-label" style="color:var(--link)">Item B</div>
+        <div class="dup-card-title" id="dupScanTitleB"></div>
+        <div class="dup-card-tags" id="dupScanTagsB"></div>
+        <div class="dup-card-desc" id="dupScanDescB"></div>
+      </div>
+    </div>
+    <button class="dup-btn dup-btn-merge" id="dupScanMerge">✦ Merge — combine tags &amp; notes</button>
+    <button class="dup-btn dup-btn-replace" id="dupScanKeepA">Keep A — delete B</button>
+    <button class="dup-btn dup-btn-both" id="dupScanKeepB">Keep B — delete A</button>
+    <button class="dup-btn dup-btn-cancel" id="dupScanSkip">Skip this pair</button>
+  </div>
+  <button class="sheet-cancel" id="dupScanClose" style="width:100%;height:42px;border-radius:8px;margin-top:4px">Close</button>
+</div>
+
+<!-- Restore backup sheet -->
+
+<div class="edit-sheet" id="restoreSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.02em">Restore from Backup</div>
+  <div id="restoreInfo" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
+  <div id="restoreActions" style="display:none;flex-direction:column;gap:8px">
+    <button class="dup-btn dup-btn-merge" id="restoreMergeBtn">✦ Merge — add missing items to current stash</button>
+    <button class="dup-btn dup-btn-replace" id="restoreReplaceBtn">Replace — full rollback to this backup</button>
+    <button class="dup-btn dup-btn-cancel" id="restoreCancelBtn">Cancel</button>
+  </div>
+  <div id="restoreLoading" style="display:none">
+    <div style="font-size:13px;color:var(--muted)">Reading backup file…</div>
+  </div>
+</div>
+
+<div style="position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+  <div>
+    <div class="logo">Stash</div>
+    <div class="logo-sub">Personal Archive</div>
+  </div>
+  <svg width="44" height="44" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer group handles box bounce after tape applied -->
+    <g>
+      <animateTransform
+        attributeName="transform"
+        type="translate"
+        values="0 0; 0 0; 0 0; 0 3; 0 -2; 0 0; 0 0"
+        keyTimes="0; 0.52; 0.56; 0.60; 0.65; 0.70; 1"
+        dur="3.5s"
+        repeatCount="indefinite"
+        calcMode="spline"
+        keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
+      />
+
+```
+  <!-- Box body -->
+  <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
+  <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
+  <polygon points="48,54 82,36 82,42 48,60" fill="#b0aa9e"/>
+  <polygon points="14,36 48,54 48,60 14,42" fill="#d4cec4"/>
+
+  <!-- Lid rotation group -->
+  <g>
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      values="0 48 54; -52 48 54; -52 48 54; 0 48 54; 0 48 54"
+      keyTimes="0; 0.25; 0.45; 0.58; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0 0 1 1; 0.4 0 0.2 1; 0 0 1 1"
+    />
+    <polygon points="14,36 48,18 82,36 48,54" fill="#f0ece4"/>
+    <polygon points="26,31 48,20 70,31 48,42" fill="#ffffff" opacity=".1"/>
+  </g>
+
+  <!-- Tape strip across lid seam — grows from left to right after lid closes -->
+  <g opacity="0">
+    <!-- Tape body — slightly translucent warm strip -->
+    <polygon points="22,44 74,26 74,31 22,49" fill="#f5e97a" opacity=".75"/>
+    <!-- Tape shine -->
+    <polygon points="22,44 74,26 74,28 22,46" fill="#ffffff" opacity=".3"/>
+    <!-- Animate tape appearing: clip via scaleX from 0 to 1 -->
+    <animateTransform
+      attributeName="transform"
+      type="scale"
+      values="0 1; 0 1; 1 1; 1 1; 1 1; 0 1"
+      keyTimes="0; 0.52; 0.64; 0.75; 0.88; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.4 0 0.2 1; 0 0 1 1; 0 0 1 1; 0.4 0 0.2 1"
+      transform-origin="22 44"
+    />
+    <animate
+      attributeName="opacity"
+      values="0; 0; 1; 1; 1; 0"
+      keyTimes="0; 0.52; 0.54; 0.75; 0.88; 1"
+      dur="3.5s"
+      repeatCount="indefinite"
+    />
+  </g>
+</g>
+```
+
+  </svg>
+  <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
+    <input type="file" id="importFile" accept=".json" style="display:none"/>
+    <input type="file" id="importBookmarksFile" accept=".html,.htm" style="display:none"/>
+    <input type="file" id="restoreFile" accept=".json" style="display:none"/>
+    <button class="btn btn-primary" id="toggleFormBtn">+ Add</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab-group">
+    <button class="tab active" data-tab="items">📦 Items</button>
+    <button class="tab" data-tab="share">⬆ Share</button>
+    <button class="tab" data-tab="settings">⚙️ Settings</button>
+  </div>
+</div>
+
+<!-- Backup banner -->
+
+<div class="backup-banner" id="backupBanner">
+  <div class="backup-banner-text">
+    <strong>Daily backup due</strong> — Save your data to Files to prevent loss.
+  </div>
+  <button class="backup-btn" id="backupNowBtn">Save to Files</button>
+  <button class="backup-dismiss" id="backupDismissBtn">✕</button>
+</div>
+
+<!-- Bulk delete bar -->
+
+<div id="bulkBar" style="display:none;background:#2a0a0a;border-bottom:1px solid var(--danger);padding:10px 16px;gap:10px;align-items:center">
+  <div id="bulkCount" style="flex:1;font-size:13px;color:#ff8a8a;font-weight:500"></div>
+  <button id="bulkDeleteConfirm" style="background:var(--danger);color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif">Delete</button>
+  <button id="bulkCancel" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:-apple-system,sans-serif">Cancel</button>
+</div>
+
+<!-- ITEMS PAGE -->
+
+<div class="page active" id="page-items">
+
+  <div class="form-panel hidden" id="formPanel">
+    <div>
+      <label>Title *</label>
+      <input type="text" id="inputTitle" placeholder="What is this?" />
+    </div>
+    <div>
+      <label>URL <span style="text-transform:none;letter-spacing:0;font-weight:300">(optional)</span></label>
+      <input type="url" id="inputUrl" placeholder="https://…" />
+    </div>
+    <div>
+      <label>Description</label>
+      <textarea id="inputDesc" rows="2" placeholder="Optional notes…"></textarea>
+    </div>
+    <div>
+      <label>Tags <span style="text-transform:none;letter-spacing:0;font-weight:300">(comma separated)</span></label>
+      <input type="text" id="inputTags" placeholder="e.g. work, idea, later" />
+    </div>
+    <div class="form-error hidden" id="formError">Title is required.</div>
+    <button class="btn btn-primary" id="saveBtn" style="align-self:flex-start;padding:0 24px">Save Item</button>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="search" id="searchInput" placeholder="Search titles, descriptions, URLs, tags…" />
+    </div>
+    <div class="ctrl-row">
+      <select id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+      </select>
+      <select id="typeFilter">
+        <option value="all">All types</option>
+        <option value="note">Notes only</option>
+        <option value="url">Web pages only</option>
+      </select>
+      <div class="count" id="countLabel">0 items</div>
+    </div>
+  </div>
+
+  <div class="tag-bar hidden" id="tagBar"></div>
+  <div class="list" id="itemList"></div>
+</div>
+
+<!-- SETTINGS PAGE -->
+
+<div class="page" id="page-settings">
+  <div class="clip-page">
+
+```
+<!-- Stash Clip section -->
+<div class="settings-section-label">🔖 Stash Clip</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 1</div><div class="clip-card-title">Copy the code</div></div>
+  <div class="clip-code" id="clipCode"></div>
+  <button class="btn btn-primary" id="copyBtn" style="width:100%;height:42px;justify-content:center">⎘ &nbsp;Copy Code</button>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 2</div><div class="clip-card-title">Create a bookmark</div></div>
+  <div class="clip-steps">
+    <div class="clip-step"><div class="clip-icon">↑</div><span>Tap the <strong>Share button</strong> in Safari (bottom toolbar)</span></div>
+    <div class="clip-step"><div class="clip-icon">＋</div><span>Tap <strong>"Add Bookmark"</strong></span></div>
+    <div class="clip-step"><div class="clip-icon">✎</div><span>Name it <strong>"Stash It"</strong> → Save</span></div>
+  </div>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge">Step 3</div><div class="clip-card-title">Replace the URL</div></div>
+  <div class="clip-steps">
+    <div class="clip-step"><div class="clip-icon">📖</div><span>Open <strong>Bookmarks</strong> in Safari</span></div>
+    <div class="clip-step"><div class="clip-icon">←</div><span>Swipe left on <strong>"Stash It"</strong> → Edit</span></div>
+    <div class="clip-step"><div class="clip-icon">⌫</div><span><strong>Clear</strong> the URL field completely</span></div>
+    <div class="clip-step"><div class="clip-icon">⎘</div><span><strong>Paste</strong> the code from Step 1 → Done</span></div>
+  </div>
+</div>
+<div class="clip-card">
+  <div class="clip-head"><div class="clip-badge done">Step 4</div><div class="clip-card-title">Test it!</div></div>
+  <div class="clip-body">Browse any page → open Bookmarks → tap <strong>"Stash It"</strong>. You'll see <em style="color:var(--accent)">"Page stashed ✓"</em>.</div>
+</div>
+<div class="clip-card clip-card-warn">
+  <div style="font-size:18px">⚠️</div>
+  <div class="clip-body"><strong>Use Stash in Safari</strong> — not the home screen icon. iOS stores data separately, so clips only appear in the Safari version.</div>
+</div>
+
+<!-- Maintenance section -->
+<div class="settings-section-label" style="padding-top:8px">🛠 Maintenance</div>
+<div class="clip-card" style="cursor:pointer" id="findDupsBtn">
+  <div class="clip-head">
+    <div class="clip-badge" style="background:#2a1a2e;color:#C77DFF">🔍</div>
+    <div>
+      <div class="clip-card-title">Find duplicates</div>
+      <div class="clip-body" style="margin-top:3px">Scan your stash for duplicate URLs or titles and resolve them.</div>
+    </div>
+  </div>
+</div>
+<div class="clip-card" style="cursor:pointer" id="bulkDeleteBtn">
+  <div class="clip-head">
+    <div class="clip-badge" style="background:#2a1010;color:#FF6B6B">🗑</div>
+    <div>
+      <div class="clip-card-title">Bulk delete</div>
+      <div class="clip-body" style="margin-top:3px">Select multiple items and delete them all at once.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Danger zone -->
+<div class="settings-section-label" style="padding-top:8px">⚠️ Danger Zone</div>
+<div class="clip-card" style="border-color:#3a1010;background:#1a0a0a">
+  <div class="clip-body" style="margin-bottom:12px">Permanently delete all your stashed items. This cannot be undone.</div>
+  <button class="btn" id="clearAllBtn" style="background:var(--danger);color:#fff;width:100%;height:42px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif">Delete All Items</button>
+</div>
+
+<!-- Trash -->
+<div class="settings-section-label" style="padding-top:8px">🗑 Recently Deleted</div>
+<div class="clip-card">
+  <div id="trashList"></div>
+  <button onclick="emptyTrash()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--danger);width:100%;height:38px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Empty Trash</button>
+</div>
+```
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="page" id="page-share">
+  <div class="clip-page">
+
+```
+<div class="settings-section-label">📥 Import</div>
+
+<div class="clip-card" style="cursor:pointer" id="importBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#1a2e10;width:38px;height:38px;border-radius:10px;font-size:18px">📥</div>
+    <div>
+      <div class="clip-card-title">Restore from backup</div>
+      <div class="clip-body" style="margin-top:3px">Pick a Stash JSON backup — merge with current items or do a full rollback.</div>
+    </div>
+  </div>
+</div>
+
+<div class="clip-card" style="cursor:pointer" id="importBookmarksBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#0a1a2e;width:38px;height:38px;border-radius:10px;font-size:18px">🔖</div>
+    <div>
+      <div class="clip-card-title">Import bookmarks</div>
+      <div class="clip-body" style="margin-top:3px">Import from Chrome, Safari, Firefox or Edge — folders become tags.</div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-section-label" style="padding-top:8px">📤 Export</div>
+
+<div class="clip-card" style="cursor:pointer" id="exportBtn">
+  <div class="clip-head">
+    <div class="dd-item-icon" style="background:#1c1a0a;width:38px;height:38px;border-radius:10px;font-size:18px">📤</div>
+    <div>
+      <div class="clip-card-title">Export</div>
+      <div class="clip-body" style="margin-top:3px">Save all your items as a JSON file — use as a backup or to move to another device.</div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
 
 <script>
-const CATEGORY_COLORS = {
-  fix:   { bg: '#FFF0EE', color: '#C0392B', label: '🔧 Fix' },
-  build: { bg: '#EEF4FF', color: '#2C5BB4', label: '🏗️ Build' },
-  idea:  { bg: '#F0FFF4', color: '#2D5016', label: '💡 Idea' },
-  none:  { bg: '#F0EDE8', color: '#6b6b74', label: '' },
-};
+const STASH_URL=location.href.split('?')[0].replace(/#.*$/,'');
+const TAG_COLORS=["#FF6B6B","#FFB347","#FFD93D","#6BCB77","#4D96FF","#C77DFF","#FF85A1","#00C9A7","#F7B731","#A29BFE"];
+function hashColor(tag){let h=0;for(let i=0;i<tag.length;i++)h=tag.charCodeAt(i)+((h<<5)-h);return TAG_COLORS[Math.abs(h)%TAG_COLORS.length]}
+const $=id=>document.getElementById(id);
 
-const DEFAULT_TODOS = [
-  // ── Active Fixes ──
-  { id: 1, text: "Fix Safari clipper → home screen sync problem", done: false, cat: "fix" },
+let items=JSON.parse(localStorage.getItem("stash_items")||"[]");
+let filterTag=null,formOpen=false,itemType="note";
 
-  // ── Completed Fixes ──
-  { id: 15, text: "Fix header layout — Share & Add buttons always on same row", done: true, cat: "fix" },
-  { id: 16, text: "Strip '- Google Search' noise from saved titles", done: true, cat: "fix" },
-  { id: 17, text: "Fix iOS Safari flexbox bug — replaced header tag with div", done: true, cat: "fix" },
-  { id: 25, text: "After stashing, auto-redirect back to original page", done: true, cat: "fix" },
-  { id: 26, text: "Fix service worker caching old broken versions", done: true, cat: "fix" },
-  { id: 37, text: "Remove Google Favicon API — use DuckDuckGo instead (privacy)", done: true, cat: "fix" },
-  { id: 38, text: "Embed Google Fonts locally — no external font calls", done: true, cat: "fix" },
+// ── Backup system ──
+const BACKUP_KEY="stash_backup";
+const BACKUP_TIME_KEY="stash_last_backup";
+const BACKUP_INTERVAL=24*60*60*1000; // 24 hours
 
-  // ── Completed Builds ──
-  { id: 18, text: "Group cards by date — Today, Yesterday, This Week", done: true, cat: "build" },
-  { id: 19, text: "Swipe left to delete cards", done: true, cat: "build" },
-  { id: 20, text: "Bigger favicons with host + path on URL cards", done: true, cat: "build" },
-  { id: 21, text: "Import items from JSON file", done: true, cat: "build" },
-  { id: 22, text: "Share menu — Import & Export in dropdown", done: true, cat: "build" },
-  { id: 23, text: "Responsive layout — 2 col tablet, 3 col desktop", done: true, cat: "build" },
-  { id: 24, text: "Safari Clip page redesign — cleaner step-by-step UI", done: true, cat: "build" },
-  { id: 27, text: "Note + Web Page item types with URL field", done: true, cat: "build" },
-  { id: 28, text: "Tag filtering with color-coded pills", done: true, cat: "build" },
-  { id: 29, text: "Sort by newest, oldest, A-Z, Z-A", done: true, cat: "build" },
-  { id: 30, text: "Filter by item type (notes vs web pages)", done: true, cat: "build" },
-  { id: 31, text: "PWA — installable on iPhone via Safari Add to Home Screen", done: true, cat: "build" },
-  { id: 32, text: "Offline support via service worker", done: true, cat: "build" },
-  { id: 39, text: "Local backup system — shadow copy + 24hr prompt to save to Files", done: true, cat: "build" },
-  { id: 40, text: "Auto-restore from shadow backup if main data wiped by iOS", done: true, cat: "build" },
-
-  // ── To Build — Core ──
-  { id: 2, text: "Settings tab — Stash Clip, Find Duplicates, Bulk Delete, Danger Zone", done: true, cat: "build" },
-  { id: 3, text: "Firebase sync — removed, conflicts with privacy-first philosophy", done: false, cat: "idea" },
-  { id: 4, text: "Server-free sync — iOS platform limitation, no clean solution exists", done: false, cat: "idea" },
-  { id: 5, text: "Once synced, Safari clipper works with home screen app", done: false, cat: "idea" },
-  { id: 43, text: "Duplicate detection on new items — merge, replace, keep both or cancel", done: true, cat: "build" },
-  { id: 44, text: "Find & resolve existing duplicates scanner", done: true, cat: "build" },
-  { id: 50, text: "Fix duplicate sheet — pause redirect until user resolves duplicate", done: true, cat: "fix" },
-  { id: 51, text: "Edit existing items — swipe right to edit, swipe left to delete", done: true, cat: "build" },
-  { id: 56, text: "Remove ✕ button from cards — swipe gestures handle delete", done: true, cat: "build" },
-  { id: 57, text: "Inline tags on card — title + tags on same row", done: true, cat: "build" },
-  { id: 58, text: "Tap card to open URL or edit sheet for notes", done: true, cat: "build" },
-  { id: 59, text: "Hide search engine URLs from cards — Google, Bing etc.", done: true, cat: "build" },
-  { id: 60, text: "Add form simplified — URL always visible, type auto-detected", done: true, cat: "build" },
-  { id: 61, text: "Compact card layout — tighter padding, smaller title, less gaps", done: true, cat: "build" },
-  { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
-  { id: 9, text: "Bulk delete — tap to select cards, delete all at once", done: true, cat: "build" },
-  { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
-  { id: 11, text: "Image / screenshot saving", done: false, cat: "build" },
-
-  // ── To Build — Import/Export ──
-  { id: 45, text: "Multi-format importer — auto-detect JSON, CSV, HTML, MD", done: true, cat: "build" },
-  { id: 47, text: "Import from browser bookmarks — HTML format (Chrome, Safari, Firefox, Edge)", done: true, cat: "build" },
-  { id: 64, text: "Share tab — dedicated page for Import / Export replacing dropdown", done: true, cat: "build" },
-  { id: 65, text: "Modern UI redesign — borderless cards, pill tabs, pill search, system font", done: true, cat: "build" },
-  { id: 66, text: "Animated splash screen — box lid closes with tape on app load", done: true, cat: "build" },
-  { id: 63, text: "Browser extension — auto-sync bookmarks without manual export (Chrome/Firefox first)", done: false, cat: "build" },
-  { id: 48, text: "Import from Obsidian — parse .md files, extract title, body, frontmatter tags", done: false, cat: "build" },
-  { id: 49, text: "Import from Pocket — HTML export format", done: false, cat: "build" },
-  { id: 7, text: "Page thumbnail / screenshot preview on URL cards", done: false, cat: "build" },
-
-  // ── To Build — UX Polish ──
-  { id: 53, text: "Tag suggestions — existing tags as tappable colour pills in edit sheet, type new ones", done: true, cat: "build" },
-
-  // ── To Build — Security ──
-  { id: 41, text: "Optional PIN lock for the app", done: false, cat: "build" },
-  { id: 42, text: "Optional localStorage encryption with user passphrase", done: false, cat: "build" },
-
-  // ── To Build — Branding ──
-  { id: 62, text: "Animated app icon — isometric box with lid closing and tape sealing", done: true, cat: "build" },
-  { id: 6, text: "iOS Shortcuts integration — deprioritised, too complex, bookmarklet covers the use case", done: false, cat: "idea" },
-  { id: 54, text: "Strip literal brackets from Shortcuts title/url params — done but feature deprioritised", done: false, cat: "idea" },
-  { id: 12, text: "Optional AI tagging — user brings their own API key", done: false, cat: "idea" },
-  { id: 13, text: "Smart search by meaning (semantic search)", done: false, cat: "idea" },
-  { id: 14, text: "Auto-summary of saved web pages", done: false, cat: "idea" },
-  { id: 33, text: "iOS 7-day localStorage expiry warning — nudge users to export", done: false, cat: "idea" },
-  { id: 34, text: "Read-only shareable link for a tag or collection", done: false, cat: "idea" },
-  { id: 35, text: "Market positioning — 'free private Obsidian for saving, not writing'", done: false, cat: "idea" },
-  { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
-];
-
-let todos = JSON.parse(localStorage.getItem("stash_todos_v18") || "null");
-if (!todos) { todos = DEFAULT_TODOS; save(); }
-let filter = "all";
-function save() { localStorage.setItem("stash_todos_v18", JSON.stringify(todos)); }
-
-// Date
-document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
-
-// Filter buttons
-document.querySelectorAll(".filter-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    filter = btn.dataset.filter;
-    render();
-  });
-});
-
-// Add
-document.getElementById("addBtn").addEventListener("click", addTodo);
-document.getElementById("addInput").addEventListener("keydown", e => { if (e.key === "Enter") addTodo(); });
-
-function addTodo() {
-  const input = document.getElementById("addInput");
-  const text = input.value.trim();
-  if (!text) return;
-  // detect category from text
-  let cat = "none";
-  if (/fix|bug|broken|error|problem/i.test(text)) cat = "fix";
-  else if (/build|add|create|implement|make/i.test(text)) cat = "build";
-  else if (/idea|maybe|consider|optional|could/i.test(text)) cat = "idea";
-  todos.unshift({ id: Date.now(), text, done: false, cat });
-  save(); input.value = ""; render();
+function save(){
+  localStorage.setItem("stash_items",JSON.stringify(items));
+  // Layer 1: always keep a shadow backup
+  localStorage.setItem(BACKUP_KEY,JSON.stringify({items,savedAt:Date.now()}));
 }
 
-// Clear done
-document.getElementById("clearDoneBtn").addEventListener("click", () => {
-  if (todos.filter(t => t.done).length === 0) return;
-  if (confirm("Remove all completed tasks?")) { todos = todos.filter(t => !t.done); save(); render(); }
+function checkAndRestoreBackup(){
+  // If main data is empty but backup exists, restore silently
+  if(items.length===0){
+    try{
+      const backup=JSON.parse(localStorage.getItem(BACKUP_KEY)||"null");
+      if(backup&&backup.items&&backup.items.length>0){
+        items=backup.items;
+        localStorage.setItem("stash_items",JSON.stringify(items));
+        showToast(`Restored ${items.length} items from backup ✓`);
+      }
+    }catch(e){}
+  }
+}
+
+function checkBackupPrompt(){
+  if(items.length===0)return;
+  const last=parseInt(localStorage.getItem(BACKUP_TIME_KEY)||"0");
+  const due=Date.now()-last>BACKUP_INTERVAL;
+  if(due){$("backupBanner").classList.add("show")}
+}
+
+function saveToFiles(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+  const date=new Date().toISOString().slice(0,10);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`stash-backup-${date}.json`;
+  a.click();
+  localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
+  $("backupBanner").classList.remove("show");
+  showToast("Backup saved to Files ✓");
+}
+
+$("backupNowBtn").addEventListener("click",saveToFiles);
+$("backupDismissBtn").addEventListener("click",()=>{
+  // Dismiss for now but remind again in 24hrs
+  localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
+  $("backupBanner").classList.remove("show");
 });
 
-function render() {
-  const list = document.getElementById("todoList");
-  const fill = document.getElementById("progressFill");
-  const label = document.getElementById("progressLabel");
+// Run on load
+checkAndRestoreBackup();
+checkBackupPrompt();
 
-  const total = todos.length;
-  const done = todos.filter(t => t.done).length;
-  fill.style.width = total ? (done/total*100)+"%" : "0%";
-  label.textContent = `${done} / ${total}`;
+// Tabs
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    $("page-"+tab.dataset.tab).classList.add("active");
+    const onItems=tab.dataset.tab==="items";
+    $("toggleFormBtn").style.display=onItems?"":"none";
+    if(tab.dataset.tab==="settings")renderTrash();
+  });
+});
+// Menu
 
-  let visible = [...todos];
-  if (filter === "done") visible = visible.filter(t => t.done);
-  else if (filter !== "all") visible = visible.filter(t => t.cat === filter && !t.done);
-  else visible = visible.filter(t => !t.done); // "all" shows pending only (done shown in done tab)
+// Form toggle
+$("toggleFormBtn").addEventListener("click",()=>{
+  formOpen=!formOpen;
+  $("formPanel").classList.toggle("hidden",!formOpen);
+  $("toggleFormBtn").textContent=formOpen?"✕ Cancel":"+ Add";
+  if(formOpen)$("inputTitle").focus();
+  $("formError").classList.add("hidden");
+});
 
-  if (filter === "all") {
-    // group by category
-    const order = ["fix","build","idea","none"];
-    const groups = {};
-    order.forEach(c => groups[c] = visible.filter(t => t.cat === c));
+// Save
+$("saveBtn").addEventListener("click",()=>addItem({}));
+$("inputTitle").addEventListener("keydown",e=>{if(e.key==="Enter")addItem({})});
 
-    list.innerHTML = "";
-    let any = false;
-    order.forEach(cat => {
-      if (!groups[cat].length) return;
-      any = true;
-      const sec = document.createElement("div");
-      sec.className = "section-label";
-      sec.textContent = CATEGORY_COLORS[cat].label || "Other";
-      list.appendChild(sec);
-      groups[cat].forEach(t => list.appendChild(makeCard(t)));
-    });
-    if (!any) list.innerHTML = `<div class="empty">All done — nothing pending ✓</div>`;
-  } else {
-    list.innerHTML = "";
-    if (!visible.length) {
-      list.innerHTML = `<div class="empty">Nothing here yet</div>`;
-    } else {
-      visible.forEach(t => list.appendChild(makeCard(t)));
+function addItem(o,skipDupCheck=false){
+  const title=(o.title!==undefined?o.title:$("inputTitle").value).trim();
+  const url=(o.url!==undefined?o.url:$("inputUrl").value).trim();
+  // Auto-detect type — if URL is provided it's a web page, otherwise a note
+  const type=o.type||(url?"url":"note");
+  const finalTitle=title||(url?tryHostname(url):"");
+  if(!finalTitle){$("formError").classList.remove("hidden");return}
+  const tags=(o.tags!==undefined?o.tags:$("inputTags").value).split(",").map(t=>t.trim()).filter(Boolean);
+  const description=(o.description!==undefined?o.description:$("inputDesc").value).trim();
+  const newItem={id:Date.now()+Math.random(),type,title:finalTitle,description,url,tags,createdAt:Date.now()};
+
+  // Duplicate check — match by URL (if url type) or exact title
+  if(!skipDupCheck){
+    const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===finalTitle.toLowerCase()));
+    if(dup){
+      showDupSheet(dup, newItem);
+      return;
     }
   }
+
+  items.unshift(newItem);
+  save();
+  $("inputTitle").value="";$("inputDesc").value="";$("inputTags").value="";$("inputUrl").value="";
+  $("formError").classList.add("hidden");
+  formOpen=false;$("formPanel").classList.add("hidden");$("toggleFormBtn").textContent="+ Add";
+  render();
+}
+function tryHostname(url){try{return new URL(url).hostname}catch{return url.slice(0,40)}}
+
+// Duplicate sheet
+let dupExisting=null,dupNew=null;
+function showDupSheet(existing, newItem){
+  dupExisting=existing; dupNew=newItem;
+  $("dupExistingTitle").textContent=cleanTitle(existing.title);
+  $("dupExistingTags").textContent=existing.tags.length?"🏷 "+existing.tags.join(", "):"No tags";
+  $("dupExistingDesc").textContent=existing.description||"No description";
+  $("dupNewTitle").textContent=cleanTitle(newItem.title);
+  $("dupNewTags").textContent=newItem.tags.length?"🏷 "+newItem.tags.join(", "):"No tags";
+  $("dupNewDesc").textContent=newItem.description||"No description";
+  $("dupSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+}
+function closeDupSheet(){
+  $("dupSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  dupExisting=null;dupNew=null;
+}
+$("dupMerge").addEventListener("click",()=>{
+  if(!dupExisting||!dupNew)return;
+  // Merge tags (union) and combine descriptions
+  const mergedTags=[...new Set([...dupExisting.tags,...dupNew.tags])];
+  const mergedDesc=[dupExisting.description,dupNew.description].filter(Boolean).join(" · ");
+  items=items.map(i=>i.id===dupExisting.id?{...i,tags:mergedTags,description:mergedDesc}:i);
+  save();render();closeDupSheet();
+  showToast("Merged ✓");
+});
+$("dupReplace").addEventListener("click",()=>{
+  if(!dupExisting||!dupNew)return;
+  items=items.map(i=>i.id===dupExisting.id?{...dupNew,id:dupExisting.id,createdAt:dupExisting.createdAt}:i);
+  save();render();closeDupSheet();
+  showToast("Replaced ✓");
+});
+$("dupBoth").addEventListener("click",()=>{
+  if(!dupNew)return;
+  items.unshift(dupNew);
+  save();render();closeDupSheet();
+  showToast("Both kept ✓");
+});
+$("dupCancel").addEventListener("click",closeDupSheet);
+
+// Incoming clip — save immediately, redirect back
+(function(){
+  const p=new URLSearchParams(location.search);
+  let t=p.get("t"),u=p.get("u");
+  if(t||u){
+    history.replaceState({},"",location.pathname);
+    // Strip literal [ ] brackets that Shortcuts sometimes passes as plain text
+    function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
+    const title=stripBrackets(decodeURIComponent(t||""));
+    const url=stripBrackets(decodeURIComponent(u||""));
+
+    // Check for duplicate before deciding whether to redirect
+    const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===(cleanTitle(title)||"").toLowerCase()));
+    if(dup){
+      const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
+      showDupSheet(dup,newItem);
+      function redirectBack(){setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1000)}
+      $("dupMerge").addEventListener("click",redirectBack,{once:true});
+      $("dupReplace").addEventListener("click",redirectBack,{once:true});
+      $("dupBoth").addEventListener("click",redirectBack,{once:true});
+      $("dupCancel").addEventListener("click",redirectBack,{once:true});
+    } else {
+      addItem({title,url,type:"url",tags:"",description:""},true);
+      showToast("Page stashed ✓");
+      setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1200);
+    }
+  }
+})();
+
+// Edit sheet
+let editingId=null;
+let selectedTags=new Set();
+
+function openEdit(item){
+  editingId=item.id;
+  $("editTitle").value=item.title;
+  $("editDesc").value=item.description||"";
+  selectedTags=new Set(item.tags);
+  $("editTags").value="";
+  renderTagSuggestions();
+  $("editSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
 }
 
-function makeCard(todo) {
-  const item = document.createElement("div");
-  item.className = "todo-item";
-
-  const check = document.createElement("button");
-  check.className = "check-btn" + (todo.done ? " done" : "");
-  check.addEventListener("click", () => {
-    todo.done = !todo.done; save(); render();
+function renderTagSuggestions(){
+  const container=$("tagSuggestions");
+  container.innerHTML="";
+  // All unique tags across all items
+  const allTags=[...new Set(items.flatMap(i=>i.tags))].sort();
+  if(!allTags.length){
+    container.style.display="none";return;
+  }
+  container.style.display="flex";
+  allTags.forEach(tag=>{
+    const btn=document.createElement("button");
+    btn.className="tag-suggestion"+(selectedTags.has(tag)?" selected":"");
+    btn.textContent=(selectedTags.has(tag)?"✓ ":"")+tag;
+    const c=hashColor(tag);
+    btn.style.borderColor=selectedTags.has(tag)?"transparent":c+"66";
+    btn.style.color=selectedTags.has(tag)?"#0d0d0f":c;
+    if(selectedTags.has(tag))btn.style.background=c;
+    btn.addEventListener("click",()=>{
+      if(selectedTags.has(tag))selectedTags.delete(tag);
+      else selectedTags.add(tag);
+      renderTagSuggestions();
+    });
+    container.appendChild(btn);
   });
+}
+function closeEdit(){
+  $("editSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  editingId=null;
+}
+$("editSave").addEventListener("click",()=>{
+  if(!editingId)return;
+  const title=$("editTitle").value.trim();
+  if(!title)return;
+  // Merge selected tags (pills) with any newly typed tags
+  const typedTags=$("editTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const tags=[...new Set([...selectedTags,...typedTags])];
+  const description=$("editDesc").value.trim();
+  items=items.map(i=>i.id===editingId?{...i,title,tags,description}:i);
+  save();render();closeEdit();
+  showToast("Saved ✓");
+});
+$("editCancel").addEventListener("click",closeEdit);
+$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("dupScanSheet").classList.remove("show");$("restoreSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
 
-  const text = document.createElement("div");
-  text.className = "todo-text" + (todo.done ? " done" : "");
-  text.textContent = todo.text;
+$("searchInput").addEventListener("input",render);
+$("sortSelect").addEventListener("change",render);
+$("typeFilter").addEventListener("change",render);
 
-  const cat = CATEGORY_COLORS[todo.cat] || CATEGORY_COLORS.none;
-  const del = document.createElement("button");
-  del.className = "del-btn"; del.innerHTML = "✕";
-  del.addEventListener("click", () => {
-    todos = todos.filter(t => t.id !== todo.id); save(); render();
+// Export
+$("exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="stash-export.json";a.click();
+  showToast("Exported!");
+});
+
+// Clear all
+$("clearAllBtn").addEventListener("click",()=>{
+  if(confirm("Delete ALL items? This cannot be undone.")){
+    items=[];save();render();showToast("All items deleted");
+  }
+});
+
+// Bulk delete
+let bulkMode=false,bulkSelected=new Set();
+$("bulkDeleteBtn").addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelector(".tab[data-tab='items']").classList.add("active");
+  $("page-items").classList.add("active");
+  $("toggleFormBtn").style.display="";
+  
+  bulkMode=true;bulkSelected=new Set();
+  render();
+  showToast("Tap cards to select, then delete");
+});
+$("bulkCancel").addEventListener("click",()=>{
+  bulkMode=false;bulkSelected=new Set();
+  $("bulkBar").style.display="none";
+  render();
+});
+let dupGroups=[],dupGroupIdx=0;
+
+function findDupGroups(){
+  const groups=[];
+  const seen=new Set();
+  items.forEach((a,i)=>{
+    if(seen.has(a.id))return;
+    const matches=items.slice(i+1).filter(b=>{
+      if(seen.has(b.id))return false;
+      const sameUrl=a.url&&b.url&&a.url===b.url;
+      const sameTitle=a.title.toLowerCase().trim()===b.title.toLowerCase().trim();
+      return sameUrl||sameTitle;
+    });
+    if(matches.length){
+      matches.forEach(b=>seen.add(b.id));
+      seen.add(a.id);
+      groups.push([a,matches[0]]);
+    }
   });
+  return groups;
+}
 
-  if (todo.cat !== "none" && cat.label) {
-    const badge = document.createElement("span");
-    badge.className = "category-badge";
-    badge.textContent = cat.label;
-    badge.style.background = cat.bg;
-    badge.style.color = cat.color;
-    item.appendChild(check);
-    item.appendChild(text);
-    item.appendChild(badge);
-    item.appendChild(del);
-  } else {
-    item.appendChild(check);
-    item.appendChild(text);
-    item.appendChild(del);
+function openDupScanner(){
+  
+  dupGroups=findDupGroups();
+  dupGroupIdx=0;
+  $("dupScanSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+  showDupScanGroup();
+}
+
+function showDupScanGroup(){
+  if(!dupGroups.length){
+    $("dupScanStatus").textContent="No duplicates found — your Stash is clean! 🎉";
+    $("dupScanGroup").style.display="none";
+    $("dupScanClose").style.display="block";
+    return;
+  }
+  if(dupGroupIdx>=dupGroups.length){
+    $("dupScanStatus").textContent=`All done! Reviewed ${dupGroups.length} duplicate pair${dupGroups.length!==1?"s":""}.`;
+    $("dupScanGroup").style.display="none";
+    $("dupScanClose").style.display="block";
+    return;
+  }
+  const [a,b]=dupGroups[dupGroupIdx];
+  $("dupScanCounter").textContent=`${dupGroupIdx+1} of ${dupGroups.length}`;
+  $("dupScanTitleA").textContent=cleanTitle(a.title);
+  $("dupScanTagsA").textContent=a.tags.length?"🏷 "+a.tags.join(", "):"No tags";
+  $("dupScanDescA").textContent=a.description||"No description";
+  $("dupScanTitleB").textContent=cleanTitle(b.title);
+  $("dupScanTagsB").textContent=b.tags.length?"🏷 "+b.tags.join(", "):"No tags";
+  $("dupScanDescB").textContent=b.description||"No description";
+  $("dupScanStatus").textContent="";
+  $("dupScanGroup").style.display="flex";
+  $("dupScanClose").style.display="none";
+}
+
+function nextDupGroup(){dupGroupIdx++;showDupScanGroup();}
+
+$("findDupsBtn").addEventListener("click",openDupScanner);
+
+$("dupScanMerge").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  const mergedTags=[...new Set([...a.tags,...b.tags])];
+  const mergedDesc=[a.description,b.description].filter(Boolean).join(" · ");
+  items=items.filter(i=>i.id!==b.id);
+  items=items.map(i=>i.id===a.id?{...i,tags:mergedTags,description:mergedDesc}:i);
+  save();render();showToast("Merged ✓");nextDupGroup();
+});
+$("dupScanKeepA").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  items=items.filter(i=>i.id!==b.id);
+  save();render();showToast("Kept A ✓");nextDupGroup();
+});
+$("dupScanKeepB").addEventListener("click",()=>{
+  const [a,b]=dupGroups[dupGroupIdx];
+  items=items.filter(i=>i.id!==a.id);
+  save();render();showToast("Kept B ✓");nextDupGroup();
+});
+$("dupScanSkip").addEventListener("click",()=>nextDupGroup());
+$("dupScanClose").addEventListener("click",()=>{
+  $("dupScanSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+});
+// Restore from backup — shows sheet with merge/replace options
+let restoreData=null;
+$("importBtn").addEventListener("click",()=>$("restoreFile").click());
+$("restoreFile").addEventListener("change",function(){
+  const file=this.files[0];if(!file)return;
+  $("restoreSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+  $("restoreLoading").style.display="block";
+  $("restoreActions").style.display="none";
+  $("restoreInfo").textContent="";
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data))throw new Error("Invalid");
+      restoreData=data.filter(i=>i.title&&i.id);
+      const existingIds=new Set(items.map(i=>i.id));
+      const newCount=restoreData.filter(i=>!existingIds.has(i.id)).length;
+      $("restoreLoading").style.display="none";
+      $("restoreInfo").innerHTML=`Found <strong style="color:var(--text)">${restoreData.length} items</strong> in backup — <strong style="color:var(--text)">${newCount} new</strong> not in your current stash.`;
+      $("restoreActions").style.display="flex";
+    }catch{
+      $("restoreLoading").style.display="none";
+      $("restoreInfo").textContent="Couldn't read this file. Make sure it's a valid Stash backup.";
+    }
+    this.value="";
+  };
+  reader.readAsText(file);
+});
+function closeRestoreSheet(){
+  $("restoreSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  restoreData=null;
+}
+$("restoreMergeBtn").addEventListener("click",()=>{
+  if(!restoreData)return;
+  const existingIds=new Set(items.map(i=>i.id));
+  const fresh=restoreData.filter(i=>!existingIds.has(i.id));
+  items=[...fresh,...items].sort((a,b)=>b.createdAt-a.createdAt);
+  save();render();closeRestoreSheet();
+  showToast(`Merged ${fresh.length} items ✓`);
+});
+$("restoreReplaceBtn").addEventListener("click",()=>{
+  if(!restoreData)return;
+  if(!confirm(`Replace all ${items.length} current items with ${restoreData.length} from backup? Cannot be undone.`))return;
+  items=[...restoreData].sort((a,b)=>b.createdAt-a.createdAt);
+  save();render();closeRestoreSheet();
+  showToast(`Restored ${items.length} items ✓`);
+});
+$("restoreCancelBtn").addEventListener("click",closeRestoreSheet);
+
+// Import browser bookmarks
+$("importBookmarksBtn").addEventListener("click",()=>{
+  
+  $("bmkSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+});
+$("bmkSheetCancel").addEventListener("click",()=>{
+  $("bmkSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+});
+$("bmkSheetChoose").addEventListener("click",()=>{
+  $("bmkSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  $("importBookmarksFile").click();
+});
+$("importBookmarksFile").addEventListener("change",function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const html=e.target.result;
+      const parser=new DOMParser();
+      const doc=parser.parseFromString(html,"text/html");
+      const links=doc.querySelectorAll("a[href]");
+      let imported=0,skipped=0;
+      const existingUrls=new Set(items.map(i=>i.url).filter(Boolean));
+      links.forEach(a=>{
+        const url=a.getAttribute("href");
+        const title=a.textContent.trim();
+        if(!url||!title||url.startsWith("javascript:"))return;
+        if(existingUrls.has(url)){skipped++;return;}
+        // Get folder name as tag — walk up to find parent DL's header
+        let tag="";
+        let el=a.parentElement;
+        while(el){
+          const prev=el.previousElementSibling;
+          if(prev&&(prev.tagName==="H3"||prev.tagName==="H1")){
+            tag=prev.textContent.trim().toLowerCase().replace(/\s+/g,"-");
+            break;
+          }
+          el=el.parentElement;
+        }
+        const addDate=a.getAttribute("add_date");
+        const createdAt=addDate?parseInt(addDate)*1000:Date.now();
+        items.push({
+          id:Date.now()+Math.random(),
+          type:"url",title:cleanTitle(title),
+          description:"",url,
+          tags:tag&&tag!=="bookmarks bar"&&tag!=="bookmarks menu"?[tag]:[],
+          createdAt
+        });
+        existingUrls.add(url);
+        imported++;
+      });
+      items.sort((a,b)=>b.createdAt-a.createdAt);
+      save();render();
+      showToast(`Imported ${imported} bookmarks${skipped>0?`, ${skipped} skipped`:""} ✓`);
+    }catch(err){showToast("Couldn't read bookmarks file ✕")}
+    this.value="";
+  };
+  reader.readAsText(file);
+});
+
+// Bookmarklet
+$("clipCode").textContent=`javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(location.href);window.location='${STASH_URL}?t='+t+'&u='+u;})();`;
+$("copyBtn").addEventListener("click",()=>{
+  const code=$("clipCode").textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(code).then(()=>showToast("Copied!")).catch(fb)}else fb();
+  function fb(){const r=document.createRange();r.selectNodeContents($("clipCode"));const s=window.getSelection();s.removeAllRanges();s.addRange(r);showToast("Selected — copy manually")}
+});
+
+function showToast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2400)}
+
+// ── Trash system ──
+const TRASH_KEY="stash_trash";
+let trash=JSON.parse(localStorage.getItem(TRASH_KEY)||"[]");
+let undoTimer=null;
+
+function saveTrash(){localStorage.setItem(TRASH_KEY,JSON.stringify(trash));}
+
+function trashItem(item){
+  // Remove from items
+  items=items.filter(i=>i.id!==item.id);
+  // Add to trash with deletedAt timestamp
+  trash.unshift({...item,deletedAt:Date.now()});
+  save();saveTrash();
+  // Auto-clear trash older than 30 days
+  const THIRTY_DAYS=30*24*60*60*1000;
+  trash=trash.filter(i=>Date.now()-i.deletedAt<THIRTY_DAYS);
+  saveTrash();
+  // Show undo toast
+  showUndoToast(item);
+}
+
+function restoreItem(item){
+  trash=trash.filter(i=>i.id!==item.id);
+  items.unshift({...item,deletedAt:undefined});
+  save();saveTrash();render();
+}
+
+function showUndoToast(item){
+  if(undoTimer)clearTimeout(undoTimer);
+  const t=$("toast");
+  t.innerHTML=`Deleted &nbsp;<button onclick="undoDelete()" style="background:none;border:none;color:inherit;font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;text-decoration:underline;padding:0">Undo</button>`;
+  t.classList.add("show");
+  // Store pending undo item
+  t._undoItem=item;
+  undoTimer=setTimeout(()=>{t.classList.remove("show");t._undoItem=null;},5000);
+}
+
+function undoDelete(){
+  const t=$("toast");
+  if(!t._undoItem)return;
+  const item=t._undoItem;
+  t._undoItem=null;
+  if(undoTimer)clearTimeout(undoTimer);
+  t.classList.remove("show");
+  restoreItem(item);
+  showToast("Restored ✓");
+}
+
+function renderTrash(){
+  const container=$("trashList");
+  if(!container)return;
+  // Auto-clear older than 30 days
+  const THIRTY_DAYS=30*24*60*60*1000;
+  trash=trash.filter(i=>Date.now()-i.deletedAt<THIRTY_DAYS);
+  saveTrash();
+  if(!trash.length){
+    container.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:8px 0;line-height:1.7">Trash is empty — deleted items appear here for 30 days before being permanently removed.</div>`;
+    return;
+  }
+  container.innerHTML="";
+  trash.forEach(item=>{
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)";
+    const info=document.createElement("div");
+    info.style.cssText="flex:1;min-width:0";
+    const title=document.createElement("div");
+    title.style.cssText="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em";
+    title.textContent=cleanTitle(item.title);
+    const date=document.createElement("div");
+    date.style.cssText="font-size:11px;color:var(--muted);margin-top:2px";
+    const daysAgo=Math.floor((Date.now()-item.deletedAt)/86400000);
+    date.textContent=daysAgo===0?"Deleted today":`Deleted ${daysAgo} day${daysAgo!==1?"s":""} ago`;
+    info.appendChild(title);info.appendChild(date);
+    const btn=document.createElement("button");
+    btn.textContent="Restore";
+    btn.style.cssText="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap;flex-shrink:0";
+    btn.addEventListener("click",()=>{restoreItem(item);renderTrash();showToast("Restored ✓")});
+    row.appendChild(info);row.appendChild(btn);
+    container.appendChild(row);
+  });
+}
+
+function emptyTrash(){
+  if(!trash.length)return;
+  if(confirm(`Permanently delete ${trash.length} item${trash.length!==1?"s":""}? This cannot be undone.`)){
+    trash=[];saveTrash();renderTrash();showToast("Trash emptied");
+  }
+}
+
+// Also update bulk delete to use trash
+$("bulkDeleteConfirm").addEventListener("click",()=>{
+  if(!bulkSelected.size)return;
+  const toTrash=items.filter(i=>bulkSelected.has(i.id));
+  toTrash.forEach(item=>trash.unshift({...item,deletedAt:Date.now()}));
+  items=items.filter(i=>!bulkSelected.has(i.id));
+  save();saveTrash();
+  bulkMode=false;bulkSelected=new Set();
+  $("bulkBar").style.display="none";
+  render();showToast(`Moved ${toTrash.length} to Trash`);
+});
+
+function cleanTitle(t){
+  return t.replace(/\s*[-–|]\s*Google Search\s*$/i,"").replace(/\s*[-–|]\s*Google\s*$/i,"")
+    .replace(/\s*[-–|]\s*Bing\s*$/i,"").replace(/\s*[-–|]\s*Yahoo.*$/i,"").trim();
+}
+function dateGroup(ts){
+  const now=new Date(),d=new Date(ts);
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const diff=Math.floor((today-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+  if(diff===0)return"Today";if(diff===1)return"Yesterday";
+  if(diff<7)return"This Week";if(diff<30)return"This Month";
+  return d.toLocaleDateString("en-US",{month:"long",year:"numeric"});
+}
+function addSwipe(wrap,card,item){
+  let sx=0,dx=0;
+  const THRESHOLD=72;
+  card.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;dx=0},{passive:true});
+  card.addEventListener("touchmove",e=>{
+    dx=e.touches[0].clientX-sx;
+    const clamped=Math.max(-88,Math.min(88,dx));
+    card.style.transition="none";
+    card.style.transform=`translateX(${clamped}px)`;
+  },{passive:true});
+  card.addEventListener("touchend",()=>{
+    card.style.transition="transform .25s ease";
+    if(dx<-THRESHOLD){
+      // Swiped left — move to trash with undo
+      card.style.transform="translateX(-100%)";
+      wrap.style.transition="opacity .25s";wrap.style.opacity="0";
+      setTimeout(()=>{trashItem(item);render()},250);
+    } else if(dx>THRESHOLD){
+      card.style.transform="translateX(0)";
+      openEdit(item);
+    } else {
+      card.style.transform="translateX(0)";
+    }
+  });
+}
+
+function render(){
+  const q=$("searchInput").value.toLowerCase().trim();
+  const srt=$("sortSelect").value,tf=$("typeFilter").value;
+  const allTags=[...new Set(items.flatMap(i=>i.tags))].sort();
+  const tb=$("tagBar");
+
+  if(!allTags.length){tb.classList.add("hidden")}
+  else{
+    tb.classList.remove("hidden");tb.innerHTML="";
+    const ab=pill("All",!filterTag);ab.addEventListener("click",()=>{filterTag=null;render()});tb.appendChild(ab);
+    allTags.forEach(tag=>{
+      const p=pill(tag,filterTag===tag);
+      if(filterTag!==tag){p.style.borderColor=hashColor(tag)+"55";p.style.color=hashColor(tag)}
+      p.addEventListener("click",()=>{filterTag=filterTag===tag?null:tag;render()});
+      tb.appendChild(p);
+    });
   }
 
-  return item;
+  let res=[...items];
+  if(q)res=res.filter(i=>i.title.toLowerCase().includes(q)||(i.description||"").toLowerCase().includes(q)||(i.url||"").toLowerCase().includes(q)||i.tags.some(t=>t.toLowerCase().includes(q)));
+  if(filterTag)res=res.filter(i=>i.tags.includes(filterTag));
+  if(tf!=="all")res=res.filter(i=>(i.type||"note")===tf);
+  if(srt==="oldest")res.sort((a,b)=>a.createdAt-b.createdAt);
+  else if(srt==="az")res.sort((a,b)=>a.title.localeCompare(b.title));
+  else if(srt==="za")res.sort((a,b)=>b.title.localeCompare(a.title));
+  else res.sort((a,b)=>b.createdAt-a.createdAt);
+
+  $("countLabel").textContent=`${res.length} / ${items.length} item${items.length!==1?"s":""}`;
+  const list=$("itemList");
+
+  if(!res.length){list.innerHTML=`<div class="empty">${items.length===0?"Nothing stashed yet.<br>Tap + Add to get started.":"No items match."}</div>`;return}
+
+  list.innerHTML="";
+  const grouped=srt==="newest"||srt==="oldest";
+  let lastGrp="";
+
+  res.forEach(item=>{
+    if(grouped){
+      const g=dateGroup(item.createdAt);
+      if(g!==lastGrp){lastGrp=g;const l=document.createElement("div");l.className="grp-label";l.textContent=g;list.appendChild(l)}
+    }
+
+    const wrap=document.createElement("div");wrap.className="card-wrap";
+    const bg=document.createElement("div");bg.className="del-bg";bg.textContent="Delete";wrap.appendChild(bg);
+    const ebg=document.createElement("div");ebg.className="edit-bg";ebg.textContent="Edit";wrap.appendChild(ebg);
+
+    const isUrl=item.type==="url"&&item.url;
+    const card=document.createElement("div");card.className="card";
+    const dt=cleanTitle(item.title);
+
+    // Title + tags inline on same row
+    const topRow=document.createElement("div");topRow.className="card-top-row";
+    const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
+    topRow.appendChild(ti);
+    if(item.tags.length){
+      const tg=document.createElement("div");tg.className="card-tags-inline";
+      item.tags.slice(0,2).forEach(tag=>{
+        const t=document.createElement("span");t.className="card-tag";t.textContent=tag;
+        const c=hashColor(tag);t.style.background=c+"18";t.style.borderColor=c+"44";t.style.color=c;
+        t.addEventListener("click",e=>{e.stopPropagation();filterTag=filterTag===tag?null:tag;render()});
+        tg.appendChild(t);
+      });
+      if(item.tags.length>2){
+        const more=document.createElement("span");more.className="card-tag";
+        more.textContent=`+${item.tags.length-2}`;
+        more.style.background="var(--surface)";more.style.borderColor="var(--border)";more.style.color="var(--muted)";
+        tg.appendChild(more);
+      }
+      topRow.appendChild(tg);
+    }
+    card.appendChild(topRow);
+
+    // Make whole card clickable — bulk mode selects, otherwise URL opens or edit
+    card.style.cursor="pointer";
+    card.addEventListener("click",e=>{
+      if(e.target.classList.contains("card-tag"))return;
+      if(bulkMode){
+        if(bulkSelected.has(item.id)){bulkSelected.delete(item.id);card.style.opacity="1";card.style.outline="none";}
+        else{bulkSelected.add(item.id);card.style.opacity=".5";card.style.outline="2px solid var(--danger)";}
+        $("bulkBar").style.display=bulkSelected.size?"flex":"none";
+        $("bulkCount").textContent=`${bulkSelected.size} selected`;
+        return;
+      }
+      if(isUrl&&item.url)window.open(item.url,"_blank","noopener");
+      else openEdit(item);
+    });
+
+    // URL row — real pages show favicon+host, search engines show nothing extra
+    const SEARCH_HOSTS=["www.google.com","google.com","www.bing.com","bing.com","search.yahoo.com","duckduckgo.com","www.baidu.com","yandex.com"];
+    if(isUrl){
+      try{
+        const host=new URL(item.url).hostname;
+        if(!SEARCH_HOSTS.includes(host)){
+          const path=new URL(item.url).pathname.replace(/\/$/,"").slice(0,28)||"";
+          const row=document.createElement("div");row.className="card-url-row";
+          const fav=document.createElement("img");fav.className="card-fav";
+          fav.src=`https://icons.duckduckgo.com/ip3/${host}.ico`;fav.onerror=()=>fav.style.display="none";
+          const info=document.createElement("div");info.className="card-url-info";
+          const h=document.createElement("span");h.className="card-host";h.textContent=host;
+          info.appendChild(h);
+          if(path){const sep=document.createElement("span");sep.className="card-path";sep.textContent=path;info.appendChild(sep);}
+          row.appendChild(fav);row.appendChild(info);card.appendChild(row);
+        }
+      }catch{}
+    }
+
+    if(item.description){const d=document.createElement("div");d.className="card-desc";d.textContent=item.description;card.appendChild(d)}
+
+    // Only show date if NOT in a date group (i.e. sorted A-Z or Z-A)
+    if(!grouped){
+      const da=document.createElement("div");da.className="card-date";
+      da.textContent=new Date(item.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+      card.appendChild(da);
+    }
+
+    wrap.appendChild(card);addSwipe(wrap,card,item);list.appendChild(wrap);
+  });
 }
+
+function pill(label,active){
+  const b=document.createElement("button");b.className="tag-pill"+(active?" active":"");b.textContent=label;return b;
+}
+
+// Service Worker
+if("serviceWorker" in navigator){
+  const sw=`const C="stash-v64";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
+}
+
+// Splash — dismiss after box animation completes
+setTimeout(()=>{
+  const s=document.getElementById("splash");
+  if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
+},2200);
 
 render();
 </script>
