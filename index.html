@@ -126,8 +126,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px}
 
 /* ── Toast ── */
-.toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em}
-.toast.show{opacity:1}
+.toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;pointer-events:auto}
 
 /* ── Sheets ── */
 .sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
@@ -354,6 +354,22 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   <button class="sheet-cancel" id="dupScanClose" style="width:100%;height:42px;border-radius:8px;margin-top:4px">Close</button>
 </div>
 
+<!-- Restore backup sheet -->
+
+<div class="edit-sheet" id="restoreSheet">
+  <div class="sheet-handle"></div>
+  <div style="font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.02em">Restore from Backup</div>
+  <div id="restoreInfo" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
+  <div id="restoreActions" style="display:none;flex-direction:column;gap:8px">
+    <button class="dup-btn dup-btn-merge" id="restoreMergeBtn">✦ Merge — add missing items to current stash</button>
+    <button class="dup-btn dup-btn-replace" id="restoreReplaceBtn">Replace — full rollback to this backup</button>
+    <button class="dup-btn dup-btn-cancel" id="restoreCancelBtn">Cancel</button>
+  </div>
+  <div id="restoreLoading" style="display:none">
+    <div style="font-size:13px;color:var(--muted)">Reading backup file…</div>
+  </div>
+</div>
+
 <div style="position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
   <div>
     <div class="logo">Stash</div>
@@ -429,6 +445,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
     <input type="file" id="importFile" accept=".json" style="display:none"/>
     <input type="file" id="importBookmarksFile" accept=".html,.htm" style="display:none"/>
+    <input type="file" id="restoreFile" accept=".json" style="display:none"/>
     <button class="btn btn-primary" id="toggleFormBtn">+ Add</button>
   </div>
 </div>
@@ -575,6 +592,13 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   <div class="clip-body" style="margin-bottom:12px">Permanently delete all your stashed items. This cannot be undone.</div>
   <button class="btn" id="clearAllBtn" style="background:var(--danger);color:#fff;width:100%;height:42px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif">Delete All Items</button>
 </div>
+
+<!-- Trash -->
+<div class="settings-section-label" style="padding-top:8px">🗑 Recently Deleted</div>
+<div class="clip-card">
+  <div id="trashList"></div>
+  <button onclick="emptyTrash()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--danger);width:100%;height:38px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Empty Trash</button>
+</div>
 ```
 
   </div>
@@ -591,8 +615,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   <div class="clip-head">
     <div class="dd-item-icon" style="background:#1a2e10;width:38px;height:38px;border-radius:10px;font-size:18px">📥</div>
     <div>
-      <div class="clip-card-title">Import backup</div>
-      <div class="clip-body" style="margin-top:3px">Restore items from a Stash JSON backup file.</div>
+      <div class="clip-card-title">Restore from backup</div>
+      <div class="clip-body" style="margin-top:3px">Pick a Stash JSON backup — merge with current items or do a full rollback.</div>
     </div>
   </div>
 </div>
@@ -696,6 +720,7 @@ document.querySelectorAll(".tab").forEach(tab=>{
     $("page-"+tab.dataset.tab).classList.add("active");
     const onItems=tab.dataset.tab==="items";
     $("toggleFormBtn").style.display=onItems?"":"none";
+    if(tab.dataset.tab==="settings")renderTrash();
   });
 });
 // Menu
@@ -870,7 +895,7 @@ $("editSave").addEventListener("click",()=>{
   showToast("Saved ✓");
 });
 $("editCancel").addEventListener("click",closeEdit);
-$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("dupScanSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
+$("sheetOverlay").addEventListener("click",()=>{closeEdit();closeDupSheet();$("bmkSheet").classList.remove("show");$("dupScanSheet").classList.remove("show");$("restoreSheet").classList.remove("show");$("sheetOverlay").classList.remove("show")});
 
 $("searchInput").addEventListener("input",render);
 $("sortSelect").addEventListener("change",render);
@@ -902,13 +927,6 @@ $("bulkDeleteBtn").addEventListener("click",()=>{
   bulkMode=true;bulkSelected=new Set();
   render();
   showToast("Tap cards to select, then delete");
-});
-$("bulkDeleteConfirm").addEventListener("click",()=>{
-  if(!bulkSelected.size)return;
-  items=items.filter(i=>!bulkSelected.has(i.id));
-  save();bulkMode=false;bulkSelected=new Set();
-  $("bulkBar").style.display="none";
-  render();showToast(`Deleted ✓`);
 });
 $("bulkCancel").addEventListener("click",()=>{
   bulkMode=false;bulkSelected=new Set();
@@ -999,24 +1017,56 @@ $("dupScanClose").addEventListener("click",()=>{
   $("dupScanSheet").classList.remove("show");
   $("sheetOverlay").classList.remove("show");
 });
-$("importBtn").addEventListener("click",()=>{$("importFile").click()});
-$("importFile").addEventListener("change",function(){
+// Restore from backup — shows sheet with merge/replace options
+let restoreData=null;
+$("importBtn").addEventListener("click",()=>$("restoreFile").click());
+$("restoreFile").addEventListener("change",function(){
   const file=this.files[0];if(!file)return;
+  $("restoreSheet").classList.add("show");
+  $("sheetOverlay").classList.add("show");
+  $("restoreLoading").style.display="block";
+  $("restoreActions").style.display="none";
+  $("restoreInfo").textContent="";
   const reader=new FileReader();
   reader.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
-      if(!Array.isArray(data)){showToast("Invalid file ✕");return}
-      const valid=data.filter(i=>i.title&&i.id);
-      const ids=new Set(items.map(i=>i.id));
-      const fresh=valid.filter(i=>!ids.has(i.id));
-      items=[...fresh,...items];save();render();
-      showToast(`Imported ${fresh.length} items ✓`);
-    }catch{showToast("Couldn't read file ✕")}
+      if(!Array.isArray(data))throw new Error("Invalid");
+      restoreData=data.filter(i=>i.title&&i.id);
+      const existingIds=new Set(items.map(i=>i.id));
+      const newCount=restoreData.filter(i=>!existingIds.has(i.id)).length;
+      $("restoreLoading").style.display="none";
+      $("restoreInfo").innerHTML=`Found <strong style="color:var(--text)">${restoreData.length} items</strong> in backup — <strong style="color:var(--text)">${newCount} new</strong> not in your current stash.`;
+      $("restoreActions").style.display="flex";
+    }catch{
+      $("restoreLoading").style.display="none";
+      $("restoreInfo").textContent="Couldn't read this file. Make sure it's a valid Stash backup.";
+    }
     this.value="";
   };
   reader.readAsText(file);
 });
+function closeRestoreSheet(){
+  $("restoreSheet").classList.remove("show");
+  $("sheetOverlay").classList.remove("show");
+  restoreData=null;
+}
+$("restoreMergeBtn").addEventListener("click",()=>{
+  if(!restoreData)return;
+  const existingIds=new Set(items.map(i=>i.id));
+  const fresh=restoreData.filter(i=>!existingIds.has(i.id));
+  items=[...fresh,...items].sort((a,b)=>b.createdAt-a.createdAt);
+  save();render();closeRestoreSheet();
+  showToast(`Merged ${fresh.length} items ✓`);
+});
+$("restoreReplaceBtn").addEventListener("click",()=>{
+  if(!restoreData)return;
+  if(!confirm(`Replace all ${items.length} current items with ${restoreData.length} from backup? Cannot be undone.`))return;
+  items=[...restoreData].sort((a,b)=>b.createdAt-a.createdAt);
+  save();render();closeRestoreSheet();
+  showToast(`Restored ${items.length} items ✓`);
+});
+$("restoreCancelBtn").addEventListener("click",closeRestoreSheet);
 
 // Import browser bookmarks
 $("importBookmarksBtn").addEventListener("click",()=>{
@@ -1091,6 +1141,107 @@ $("copyBtn").addEventListener("click",()=>{
 
 function showToast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2400)}
 
+// ── Trash system ──
+const TRASH_KEY="stash_trash";
+let trash=JSON.parse(localStorage.getItem(TRASH_KEY)||"[]");
+let undoTimer=null;
+
+function saveTrash(){localStorage.setItem(TRASH_KEY,JSON.stringify(trash));}
+
+function trashItem(item){
+  // Remove from items
+  items=items.filter(i=>i.id!==item.id);
+  // Add to trash with deletedAt timestamp
+  trash.unshift({...item,deletedAt:Date.now()});
+  save();saveTrash();
+  // Auto-clear trash older than 30 days
+  const THIRTY_DAYS=30*24*60*60*1000;
+  trash=trash.filter(i=>Date.now()-i.deletedAt<THIRTY_DAYS);
+  saveTrash();
+  // Show undo toast
+  showUndoToast(item);
+}
+
+function restoreItem(item){
+  trash=trash.filter(i=>i.id!==item.id);
+  items.unshift({...item,deletedAt:undefined});
+  save();saveTrash();render();
+}
+
+function showUndoToast(item){
+  if(undoTimer)clearTimeout(undoTimer);
+  const t=$("toast");
+  t.innerHTML=`Deleted &nbsp;<button onclick="undoDelete()" style="background:none;border:none;color:inherit;font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;text-decoration:underline;padding:0">Undo</button>`;
+  t.classList.add("show");
+  // Store pending undo item
+  t._undoItem=item;
+  undoTimer=setTimeout(()=>{t.classList.remove("show");t._undoItem=null;},5000);
+}
+
+function undoDelete(){
+  const t=$("toast");
+  if(!t._undoItem)return;
+  const item=t._undoItem;
+  t._undoItem=null;
+  if(undoTimer)clearTimeout(undoTimer);
+  t.classList.remove("show");
+  restoreItem(item);
+  showToast("Restored ✓");
+}
+
+function renderTrash(){
+  const container=$("trashList");
+  if(!container)return;
+  // Auto-clear older than 30 days
+  const THIRTY_DAYS=30*24*60*60*1000;
+  trash=trash.filter(i=>Date.now()-i.deletedAt<THIRTY_DAYS);
+  saveTrash();
+  if(!trash.length){
+    container.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:8px 0;line-height:1.7">Trash is empty — deleted items appear here for 30 days before being permanently removed.</div>`;
+    return;
+  }
+  container.innerHTML="";
+  trash.forEach(item=>{
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)";
+    const info=document.createElement("div");
+    info.style.cssText="flex:1;min-width:0";
+    const title=document.createElement("div");
+    title.style.cssText="font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em";
+    title.textContent=cleanTitle(item.title);
+    const date=document.createElement("div");
+    date.style.cssText="font-size:11px;color:var(--muted);margin-top:2px";
+    const daysAgo=Math.floor((Date.now()-item.deletedAt)/86400000);
+    date.textContent=daysAgo===0?"Deleted today":`Deleted ${daysAgo} day${daysAgo!==1?"s":""} ago`;
+    info.appendChild(title);info.appendChild(date);
+    const btn=document.createElement("button");
+    btn.textContent="Restore";
+    btn.style.cssText="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap;flex-shrink:0";
+    btn.addEventListener("click",()=>{restoreItem(item);renderTrash();showToast("Restored ✓")});
+    row.appendChild(info);row.appendChild(btn);
+    container.appendChild(row);
+  });
+}
+
+function emptyTrash(){
+  if(!trash.length)return;
+  if(confirm(`Permanently delete ${trash.length} item${trash.length!==1?"s":""}? This cannot be undone.`)){
+    trash=[];saveTrash();renderTrash();showToast("Trash emptied");
+  }
+}
+
+// Also update bulk delete to use trash
+$("bulkDeleteConfirm").addEventListener("click",()=>{
+  if(!bulkSelected.size)return;
+  const toTrash=items.filter(i=>bulkSelected.has(i.id));
+  toTrash.forEach(item=>trash.unshift({...item,deletedAt:Date.now()}));
+  items=items.filter(i=>!bulkSelected.has(i.id));
+  save();saveTrash();
+  bulkMode=false;bulkSelected=new Set();
+  $("bulkBar").style.display="none";
+  render();showToast(`Moved ${toTrash.length} to Trash`);
+});
+
 function cleanTitle(t){
   return t.replace(/\s*[-–|]\s*Google Search\s*$/i,"").replace(/\s*[-–|]\s*Google\s*$/i,"")
     .replace(/\s*[-–|]\s*Bing\s*$/i,"").replace(/\s*[-–|]\s*Yahoo.*$/i,"").trim();
@@ -1109,7 +1260,6 @@ function addSwipe(wrap,card,item){
   card.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;dx=0},{passive:true});
   card.addEventListener("touchmove",e=>{
     dx=e.touches[0].clientX-sx;
-    // Left = delete (negative), Right = edit (positive)
     const clamped=Math.max(-88,Math.min(88,dx));
     card.style.transition="none";
     card.style.transform=`translateX(${clamped}px)`;
@@ -1117,12 +1267,11 @@ function addSwipe(wrap,card,item){
   card.addEventListener("touchend",()=>{
     card.style.transition="transform .25s ease";
     if(dx<-THRESHOLD){
-      // Swiped left — delete
+      // Swiped left — move to trash with undo
       card.style.transform="translateX(-100%)";
       wrap.style.transition="opacity .25s";wrap.style.opacity="0";
-      setTimeout(()=>{items=items.filter(i=>i.id!==item.id);save();render()},250);
+      setTimeout(()=>{trashItem(item);render()},250);
     } else if(dx>THRESHOLD){
-      // Swiped right — edit
       card.style.transform="translateX(0)";
       openEdit(item);
     } else {
@@ -1256,7 +1405,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v61";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v64";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
