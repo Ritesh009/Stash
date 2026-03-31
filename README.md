@@ -2,217 +2,107 @@
 
 > Your personal archive. Stored on your device, free forever.
 
-Stash is a lightweight, privacy-first bookmarking and note-saving app that runs entirely in your browser. No account. No server. No subscription. Your data never leaves your device.
+Stash is a privacy-first bookmarking app that runs entirely in your browser. No account, no server, no subscription. Your data never leaves your device.
+
+→ **[Open Stash](https://ritesh009.github.io/Stash/)**
 
 -----
 
-## ✨ Features
+## Features
 
-- **Save anything** — web pages, notes, ideas, links
-- **Stash Clip** — one-tap saving from any page in any browser via a bookmarklet
-- **Tap to open** — tap any card to open the URL or edit a note
-- **Tags inline** — tags shown on same row as title, tap to filter instantly
-- **Swipe to delete** — swipe left on any card
-- **Swipe to edit** — swipe right on any card to edit title, tags, description
-- **Tag suggestions** — existing tags shown as tappable pills when editing
-- **Smart URL display** — search engine URLs hidden from cards but still tappable
-- **Date groups** — items grouped by Today, Yesterday, This Week, This Month
-- **Search & filter** — search titles, descriptions, URLs and tags
-- **Sort** — newest, oldest, A–Z, Z–A
-- **Duplicate detection** — merge, replace, keep both or cancel on new saves
-- **Find & resolve duplicates** — scanner in Settings to clean up existing items
-- **Bulk delete** — select multiple items and delete at once
-- **Import bookmarks** — drop a browser bookmarks HTML file, folders become tags
-- **Import / Export** — your data as JSON, fully portable
-- **Daily backup** — prompted every 24hrs to save a backup file to your device
-- **Shadow backup** — automatic localStorage copy, auto-restores if data is lost
-- **Works offline** — service worker caches the app for offline use
-- **Installable on iPhone** — add to home screen via Safari
-- **Responsive** — works on phone, tablet and desktop
-- **Animated app icon** — isometric box with lid closing and tape sealing on load
+**Saving**
 
------
+- Save web pages, notes, ideas and links
+- Stash Clip — one-tap saving from any browser via a bookmarklet
+- Duplicate detection on save — merge, replace or keep both
 
-## 🔒 Privacy
+**Organising**
 
-Stash is designed to be private by default:
+- Tags with instant filter, search across titles, URLs, descriptions and tags
+- Sort by newest, oldest, A–Z, Z–A
+- Date groups — Today, Yesterday, This Week, This Month
 
-- **No server** — all data stored in your browser’s localStorage
-- **No analytics** — zero tracking, no third-party scripts
-- **No Google** — fonts are system fonts, favicons fetched via DuckDuckGo
-- **No account required** — nothing to sign up for or log in to
-- **Your data is yours** — export as JSON anytime, no lock-in
+**Managing**
+
+- Swipe left to delete, swipe right to edit
+- Bulk delete, find & resolve duplicates
+- Trash with 30-day recovery and 5-second undo
+
+**Data**
+
+- Import browser bookmarks (Chrome, Safari, Firefox, Edge) — folders become tags
+- Export / Restore as JSON — merge or full replace
+- Daily backup prompt + shadow backup for data safety
 
 -----
 
-## 📱 Install on iPhone
+## Privacy & Security
 
-1. Open your Stash URL in **Safari**
-1. Tap the **Share button** (↑) at the bottom
-1. Tap **“Add to Home Screen”**
-1. Tap **Add**
+- **No server** — data stored locally on your device, never transmitted
+- **No tracking** — zero analytics, no third-party scripts
+- **No Google** — system fonts, favicons via DuckDuckGo
+- **No account** — nothing to sign up for
 
-Stash will appear as an app icon on your home screen and open fullscreen.
+**How data is stored:**
 
-> ⚠️ **Important:** Use Stash in Safari (not the home screen icon) if you want Stash Clip to work. iOS stores data separately for each context.
+Every time you open Stash for the first time, you set a passphrase. This is used for two things:
 
------
+1. **Deriving storage key names** — the names of the storage keys themselves are a SHA-256 hash of your passphrase. An extension scanning localStorage or OPFS cannot find your data without knowing your passphrase — there is nothing named “stash” or “items” to look for.
+1. **Deriving the AES-256 encryption key** — all data is encrypted using PBKDF2 (200,000 iterations) with your passphrase and a random salt. Without your passphrase the data is unreadable.
 
-## 🤖 Install on Android
+Data is stored in two places, both encrypted:
 
-1. Open your Stash URL in **Chrome**
-1. Tap the **three dot menu** (⋮) at the top right
-1. Tap **“Add to Home Screen”**
-1. Tap **Add**
+- **OPFS** (primary) — a private file system managed by the browser on your device
+- **localStorage** (shadow) — an encrypted fallback under the derived key name
 
-Stash installs as a PWA and opens fullscreen just like a native app.
+Your passphrase is never stored anywhere. You can verify your storage status in **⚙️ Settings → Security**.
 
-**Web Clip on Android:**
-The bookmarklet works in Chrome on Android too. Follow the same Stash Clip setup steps but in Chrome — add a bookmark, edit it, paste the code.
+**Lock policy:** Stash stays unlocked for 24 hours or until you close the tab — whichever comes first. You can also lock manually via Settings → Lock Stash.
 
------
+**Forgot your passphrase?** Go to Settings → Danger Zone → Export backup & reset. Stash will auto-export an unencrypted backup to Files, wipe all encrypted data, and let you set a new passphrase. Import the backup to restore your items — then delete the backup file from Files as it is unencrypted.
 
-## 💻 Use on Desktop
-
-Just open your Stash URL in any browser — Chrome, Firefox, Safari, Edge. No install needed.
-
-To save pages quickly on desktop, the bookmarklet works in every browser:
-
-1. Go to the **⚙️ Settings** tab inside Stash
-1. Copy the code
-1. Create a new bookmark in your browser
-1. Replace the URL with the copied code
-1. Name it **“Stash It”** and save it to your bookmarks bar
-
-Now one click saves any page to Stash from your desktop browser.
+> ⚠️ This encryption protects against extension snooping and casual device access. It does not protect against someone who has your unlocked device and knows your passphrase.
 
 -----
 
-## 🌐 Browser Support
+## Install
 
-|Browser          |Use Stash|Install as App|Web Clip|
-|-----------------|---------|--------------|--------|
-|Safari (iPhone)  |✅        |✅ Best        |✅       |
-|Chrome (Android) |✅        |✅             |✅       |
-|Chrome (desktop) |✅        |✅             |✅       |
-|Firefox (desktop)|✅        |✅             |✅       |
-|Safari (Mac)     |✅        |✅             |✅       |
-|Edge (desktop)   |✅        |✅             |✅       |
-|Chrome (iPhone)  |✅        |⚠️ Limited     |✅       |
+**iPhone** — Open in Safari → Share → Add to Home Screen
 
+**Android** — Open in Chrome → ⋮ → Add to Home Screen
 
-> ⚠️ Chrome on iPhone can open Stash fine but Apple restricts PWA installs to Safari only on iOS.
+**Desktop** — Just open the URL in any browser, no install needed
+
+> ⚠️ On iPhone, use Stash in **Safari** (not the home screen icon) for Stash Clip to work. iOS keeps browser storage and home screen app storage completely separate.
 
 -----
 
-## 🔖 Stash Clip Setup
+## Stash Clip
 
-Stash Clip lets you save any page to Stash with one tap — works in Safari, Chrome, Firefox and any browser.
-
-1. Go to the **⚙️ Settings** tab inside Stash
-1. Tap **Copy Code** to copy the bookmarklet
-1. In Safari, bookmark any page — name it **“Stash It”**
-1. Edit that bookmark and replace the URL with the copied code
-1. Done — tap “Stash It” from any page to save it instantly
+Save any page with one tap. Go to the **🔖 Clip** tab in Stash, copy the bookmarklet code, and add it as a bookmark in your browser. Works in Safari, Chrome, Firefox and Edge.
 
 -----
 
-## 💾 Backup & Data Safety
+## Self-hosting
 
-Stash uses two layers of backup:
+Stash is a single HTML file — no build step, no dependencies.
 
-**Layer 1 — Shadow copy**
-Every save writes a second copy to a separate localStorage key. If iOS clears your main data, Stash silently restores from this copy on next open.
+1. [Fork this repo](https://github.com/ritesh009/Stash/fork)
+1. Go to **Settings → Pages → Deploy from branch → main**
+1. Your Stash is live at `https://YOUR-USERNAME.github.io/Stash/`
 
-**Layer 2 — Daily file backup**
-Every 24hrs, a green banner appears prompting you to save a dated JSON file (e.g. `stash-backup-2026-03-28.json`) to your iPhone’s Files app. This survives browser storage clears.
-
-You can also manually export anytime via **Share tab → Export**.
+Free forever on GitHub Pages.
 
 -----
 
-## 🗺 Roadmap
+## Why no sync?
 
-|Feature                                            |Status   |
-|---------------------------------------------------|---------|
-|Save notes & web pages                             |✅ Done   |
-|Tags, search, sort, filter                         |✅ Done   |
-|Stash Clip bookmarklet                             |✅ Done   |
-|Swipe to edit / delete                             |✅ Done   |
-|Tag suggestions in edit sheet                      |✅ Done   |
-|Inline tags on cards                               |✅ Done   |
-|Tap card to open URL or edit                       |✅ Done   |
-|Import / Export                                    |✅ Done   |
-|Import browser bookmarks                           |✅ Done   |
-|Duplicate detection (new items)                    |✅ Done   |
-|Find & resolve existing duplicates                 |✅ Done   |
-|Bulk delete                                        |✅ Done   |
-|Daily backup prompts                               |✅ Done   |
-|Privacy — no Google fonts or favicons              |✅ Done   |
-|Responsive layout (mobile, tablet, desktop)        |✅ Done   |
-|Settings tab — Stash Clip, maintenance, danger zone|✅ Done   |
-|Share tab — Import & Export                        |✅ Done   |
-|Animated app icon — box with tape                  |✅ Done   |
-|Modern UI redesign                                 |✅ Done   |
-|Multi-format import (Raindrop, Obsidian)           |🔜 Planned|
-|Browser extension — auto-sync bookmarks            |🔜 Planned|
-|Optional AI tagging (bring your own API key)       |💡 Idea   |
-|Optional PIN lock                                  |💡 Idea   |
+Stash is local-first by design. Firebase contradicts the privacy philosophy, and iOS makes serverless sync technically impossible — Safari and the home screen PWA use separate storage with no bridge.
+
+Use Stash in Safari for the best experience. Move data between devices via **Share → Export** on one device and **Share → Restore** on the other.
 
 -----
 
-## 🚀 Using Stash
+## License
 
-**Option 1 — Use the hosted version (easiest)**
-Just open this URL in Safari on your iPhone — no setup needed:
-
-```
-https://ritesh009.github.io/Stash/
-```
-
-Add it to your home screen and you’re done. Free, no account required.
-
-**Option 2 — Host it yourself on GitHub Pages (also free)**
-If you want your own copy at your own URL:
-
-1. [Fork this repo](https://github.com/ritesh009/Stash/fork) on GitHub
-1. Go to your forked repo → **Settings → Pages**
-1. Under **Source**, select **Deploy from a branch → main → / (root)**
-1. Click **Save**
-1. Your Stash will be live at `https://YOUR-USERNAME.github.io/Stash/`
-
-That’s it — completely free, no domain purchase needed, no server to maintain.
-
-> Both options are free. The only difference is Option 2 gives you your own private URL and full control over the code.
-
------
-
-## 🔄 Why no cloud sync?
-
-Stash is intentionally local-first. We explored adding Firebase sync but decided against it — Firebase is a Google product, which contradicts Stash’s privacy-first philosophy.
-
-The iOS platform also makes true private sync without a server technically impossible — Apple sandboxes the home screen PWA and Safari as completely separate storage contexts with no way to bridge them without a third-party server.
-
-**The recommended approach:**
-Use Stash in **Safari** (not the home screen icon) for the best experience. Stash Clip works there, data persists reliably, and the daily backup prompt keeps you safe.
-
-To move data between devices manually, use **Share → Export** on one device and **Share → Import** on the other.
-
------
-
-## 🧠 Philosophy
-
-Most bookmark apps charge a monthly fee, store your data on their servers, and bundle AI you may not want. Stash takes the opposite approach:
-
-- **Local first** — your data lives on your device
-- **Free forever** — no subscription, no shared server to maintain
-- **Bring your own** — if you want sync, bring your own Firebase; if you want AI, bring your own API key
-- **Simple** — one file, no setup, just works
-
-Think of it as a lightweight, private alternative to apps like mymind — for people who want ownership over their data.
-
------
-
-## 📄 License
-
-MIT — free to use, modify, and self-host.
+MIT — free to use, modify and self-host.
