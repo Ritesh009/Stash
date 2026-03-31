@@ -378,6 +378,7 @@ const DEFAULT_TODOS = [
   { id: 61, text: "Compact card layout — tighter padding, smaller title, less gaps", done: true, cat: "build" },
   { id: 52, text: "Clip handler — skip redirect if duplicate sheet is shown", done: true, cat: "fix" },
   { id: 9, text: "Bulk delete — tap to select cards, delete all at once", done: true, cat: "build" },
+  { id: 70, text: "Pagination — show 50 items at a time, Load More button, resets on filter/sort/search change", done: true, cat: "build" },
   { id: 69, text: "Title cleaning — strip noisy suffixes (Google Search, Netflix, tv series, where to watch etc.) — current list is sufficient, user can fix edge cases via swipe-to-edit", done: true, cat: "build" },
   { id: 68, text: "Restore from backup — merge or full replace, sheet shows item count before confirming", done: true, cat: "build" },
   { id: 67, text: "Trash system — swipe delete moves to trash, 5s undo toast, restore from Settings, auto-clear after 30 days", done: true, cat: "build" },
@@ -415,10 +416,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v22") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v23") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v22", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v23", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
