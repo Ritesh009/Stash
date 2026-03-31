@@ -1,6 +1,6 @@
 # 📦 Stash
 
-> Your personal archive. Stored on your device, free forever.
+> A place that doesn’t know you. And never will.
 
 Stash is a privacy-first bookmarking app that runs entirely in your browser. No account, no server, no subscription. Your data never leaves your device.
 
