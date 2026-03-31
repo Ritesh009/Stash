@@ -382,6 +382,12 @@ const DEFAULT_TODOS = [
   { id: 69, text: "Title cleaning — strip noisy suffixes (Google Search, Netflix, tv series, where to watch etc.) — current list is sufficient, user can fix edge cases via swipe-to-edit", done: true, cat: "build" },
   { id: 68, text: "Restore from backup — merge or full replace, sheet shows item count before confirming", done: true, cat: "build" },
   { id: 67, text: "Trash system — swipe delete moves to trash, 5s undo toast, restore from Settings, auto-clear after 30 days", done: true, cat: "build" },
+  { id: 73, text: "Settings restructure — Security (storage status + hint + lock), Maintenance, Recently Deleted, Danger Zone (lock + forgot passphrase + delete all)", done: true, cat: "build" },
+  { id: 74, text: "Clip tab — Stash Clip moved from Settings to own tab", done: true, cat: "build" },
+  { id: 75, text: "Forgot passphrase — auto-exports unencrypted backup, wipes encrypted data, fresh setup. Warning shown inline in Settings.", done: true, cat: "build" },
+  { id: 76, text: "Passphrase hint — stored in Settings, shown on lock screen, never store passphrase itself", done: true, cat: "build" },
+  { id: 77, text: "Tab icons — custom SVG icon set: archive box, upload, bookmark, double gear. Consistent stroke weight.", done: true, cat: "build" },
+  { id: 78, text: "Full emoji-to-SVG sweep — all UI emojis replaced with inline SVGs: section labels (lock, wrench, trash, warning, bookmark), card icons (search, trash, download, upload, copy, pencil, share, arrow, X), clip step icons. Zero emojis in UI.", done: true, cat: "build" },
   { id: 10, text: "Categories / folders beyond tags", done: false, cat: "build" },
   { id: 11, text: "Image / screenshot saving", done: false, cat: "build" },
 
@@ -400,9 +406,9 @@ const DEFAULT_TODOS = [
   { id: 53, text: "Tag suggestions — existing tags as tappable colour pills in edit sheet, type new ones", done: true, cat: "build" },
 
   // ── To Build — Security ──
-  { id: 71, text: "OPFS + AES-256 encryption — data stored encrypted in OPFS, localStorage kept as shadow fallback, auto-migrates on first load, device-bound key via PBKDF2", done: true, cat: "build" },
-  { id: 72, text: "AES-256 encryption — implemented as part of id:71, encrypted with PBKDF2-derived key bound to origin", done: true, cat: "build" },
-  { id: 41, text: "PIN lock for the app — protects against casual physical access", done: false, cat: "build" },
+  { id: 71, text: "Passphrase encryption — key names derived from passphrase via SHA-256 (unsearchable), AES-256 key via PBKDF2 200k iterations. Both OPFS and localStorage use derived names. Passphrase never stored. First-time setup + unlock screen on every open.", done: true, cat: "build" },
+  { id: 72, text: "localStorage shadow uses passphrase-derived key name — same as OPFS. Both copies encrypted, both unsearchable without passphrase.", done: true, cat: "build" },
+  { id: 41, text: "Lock policy — tab close clears session (sessionStorage auto-cleared), 24hr expiry forces re-unlock even if tab stays open, manual lock button in Settings clears immediately.", done: true, cat: "build" },
   { id: 42, text: "Optional localStorage encryption with user passphrase — superseded by id:72 above", done: false, cat: "idea" },
 
   // ── To Build — Branding ──
@@ -418,10 +424,10 @@ const DEFAULT_TODOS = [
   { id: 36, text: "Self-hostable open source release on GitHub", done: false, cat: "idea" },
 ];
 
-let todos = JSON.parse(localStorage.getItem("stash_todos_v26") || "null");
+let todos = JSON.parse(localStorage.getItem("stash_todos_v32") || "null");
 if (!todos) { todos = DEFAULT_TODOS; save(); }
 let filter = "all";
-function save() { localStorage.setItem("stash_todos_v26", JSON.stringify(todos)); }
+function save() { localStorage.setItem("stash_todos_v32", JSON.stringify(todos)); }
 
 // Date
 document.getElementById("dateLabel").textContent = new Date().toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric" });
