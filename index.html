@@ -1243,8 +1243,33 @@ $("bulkDeleteConfirm").addEventListener("click",()=>{
 });
 
 function cleanTitle(t){
-  return t.replace(/\s*[-–|]\s*Google Search\s*$/i,"").replace(/\s*[-–|]\s*Google\s*$/i,"")
-    .replace(/\s*[-–|]\s*Bing\s*$/i,"").replace(/\s*[-–|]\s*Yahoo.*$/i,"").trim();
+  if(!t)return t;
+  return t
+    // Search engine suffixes
+    .replace(/\s*[-–|]\s*Google Search\s*$/i,"")
+    .replace(/\s*[-–|]\s*Google\s*$/i,"")
+    .replace(/\s*[-–|]\s*Bing\s*$/i,"")
+    .replace(/\s*[-–|]\s*Yahoo.*$/i,"")
+    .replace(/\s*[-–|]\s*DuckDuckGo\s*$/i,"")
+    // Common site name suffixes
+    .replace(/\s*[-–|]\s*Wikipedia.*$/i,"")
+    .replace(/\s*[-–|]\s*IMDb\s*$/i,"")
+    .replace(/\s*[-–|]\s*Netflix\s*$/i,"")
+    .replace(/\s*[-–|]\s*YouTube\s*$/i,"")
+    .replace(/\s*[-–|]\s*Reddit\s*$/i,"")
+    .replace(/\s*[-–|]\s*Amazon.*$/i,"")
+    .replace(/\s*[-–|]\s*Twitter\s*$/i,"")
+    .replace(/\s*[-–|]\s*Instagram\s*$/i,"")
+    .replace(/\s*[-–|]\s*Facebook\s*$/i,"")
+    // Noisy query suffixes users commonly search
+    .replace(/\s*(tv series|web series|movie|film|series|season \d+|episode \d+)\s*[-–|]?\s*$/i,"")
+    .replace(/\s*(where to watch|streaming|online|download|release date|trailer|cast|review)\s*$/i,"")
+    .replace(/\s*(in english|in hindi|dubbed|subtitles?)\s*$/i,"")
+    // Brackets/parens with redundant info at end
+    .replace(/\s*\(\s*(official|trailer|hd|full|video)\s*\)\s*$/i,"")
+    // Multiple spaces
+    .replace(/\s{2,}/g," ")
+    .trim();
 }
 function dateGroup(ts){
   const now=new Date(),d=new Date(ts);
@@ -1405,7 +1430,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v64";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v65";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
