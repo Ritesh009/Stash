@@ -25,8 +25,8 @@
 ```
 /* ── Header ── */
 header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
-.logo{font-size:22px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
-.logo-sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.logo{font-size:32px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
+.logo-sub{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);display:block;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
 /* ── Buttons ── */
@@ -261,7 +261,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   </svg>
   <div style="text-align:center">
     <div id="ppTitle" style="font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--text)">Stash</div>
-    <div id="ppSubtitle" style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;max-width:260px"></div>
+    <div style="font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.02em">A place that doesn't know you.</div>
+    <div id="ppSubtitle" style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6;max-width:260px"></div>
   </div>
   <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px">
     <input id="ppInput" type="password" placeholder="Enter passphrase…" autocomplete="current-password"
@@ -400,7 +401,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div style="position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
   <div>
     <div class="logo">Stash</div>
-    <div class="logo-sub">Personal Archive</div>
   </div>
   <svg width="44" height="44" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
     <!-- Outer group handles box bounce after tape applied -->
@@ -1784,7 +1784,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v80";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v89";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1828,12 +1828,57 @@ async function handlePassphrase(){
     const confirm=$("ppConfirm").value.trim();
     if(pp!==confirm){$("ppError").textContent="Passphrases don't match.";$("ppError").style.display="block";return;}
   }
+  // crypto.subtle requires HTTPS
+  if(!crypto?.subtle){
+    $("ppError").textContent="Encryption unavailable. Stash requires HTTPS — open via GitHub Pages.";
+    $("ppError").style.display="block";
+    return;
+  }
   $("ppBtn").textContent="Unlocking…";$("ppBtn").disabled=true;
   try{
     await initWithPassphrase(pp);
+
+    // Verify passphrase is correct
+    const verifyKey=storageKey+"_v";
+    if(!isFirstTime){
+      const token=localStorage.getItem(verifyKey);
+      if(token){
+        // Token exists — must decrypt correctly
+        const verified=await decryptFromBase64(token);
+        if(verified!=="stash-verified"){
+          cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+          $("ppError").textContent="Wrong passphrase. Try again.";
+          $("ppError").style.display="block";
+          $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+          $("ppInput").value="";$("ppInput").focus();
+          return;
+        }
+      } else {
+        // Existing user, no token yet — check salt exists + data found
+        const hasSalt=localStorage.getItem(saltKey);
+        const hasData=items.length>0||localStorage.getItem(storageKey);
+        if(hasSalt&&!hasData){
+          // Salt set but no data under this key = wrong passphrase
+          cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+          $("ppError").textContent="Wrong passphrase. Try again.";
+          $("ppError").style.display="block";
+          $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+          $("ppInput").value="";$("ppInput").focus();
+          return;
+        }
+        // Correct — store token for future
+        const newToken=await encryptToBase64("stash-verified");
+        localStorage.setItem(verifyKey,newToken);
+      }
+    } else {
+      // First time — store token now
+      const token=await encryptToBase64("stash-verified");
+      localStorage.setItem(verifyKey,token);
+    }
+
     localStorage.setItem(PP_SET_KEY,"1");
     sessionStorage.setItem("__pp",pp);
-    sessionStorage.setItem("__pp_ts",Date.now().toString()); // timestamp for 24hr check
+    sessionStorage.setItem("__pp_ts",Date.now().toString());
     $("ppInput").value="";$("ppConfirm").value="";
     $("ppScreen").style.display="none";
     checkAndRestoreBackup();checkBackupPrompt();render();
@@ -1900,31 +1945,104 @@ function lockStash(){
   showPassphraseScreen(true);
 }
 
+// ── BroadcastChannel — cross-tab sync and clip delegation ──
+const bc=new BroadcastChannel("stash");
+
+// Listen for messages from other tabs
+bc.onmessage=async(e)=>{
+  const {type,data}=e.data;
+  if(type==="save_clip"&&cryptoKey){
+    // Another tab asked us to save a clip — we're unlocked so we handle it
+    const {title,url}=data;
+    const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===(cleanTitle(title)||"").toLowerCase()));
+    if(!dup){
+      const item={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
+      items.unshift(item);save();render();
+    }
+    bc.postMessage({type:"clip_saved",data:{title,url,hadDup:!!dup}});
+  }
+  if(type==="item_saved"&&cryptoKey){
+    // Another tab saved an item — re-read from storage and re-render
+    const fresh=await opfsRead(storageKey)||JSON.parse(localStorage.getItem(storageKey)||"null");
+    if(fresh){items=fresh;render();}
+  }
+};
+
+// Notify other open tabs whenever we save
+const _origSave=save;
+function save(){
+  _origSave();
+  bc.postMessage({type:"item_saved"});
+}
+
 $("ppBtn").addEventListener("click",handlePassphrase);
 $("ppInput").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphrase()});
 $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphrase()});
 
-// Init — only show passphrase screen on first time setup
-// After setup, auto-unlock using stored salt + passphrase stored in sessionStorage
+// Init
 (async()=>{
   const isFirstTime=!localStorage.getItem(PP_SET_KEY);
   if(isFirstTime){
     showPassphraseScreen();
-  } else {
+    return;
+  }
+
+  // If this tab has a clip to save, try delegating to an already-unlocked tab first
+  if(_clipParams){
+    const {t,u}=_clipParams;
+    function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
+    const title=stripBrackets(decodeURIComponent(t||""));
+    const url=stripBrackets(decodeURIComponent(u||""));
+
+    // Update passphrase screen to show context
+    $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
+
+    // Ask any open unlocked tab to handle it
+    bc.postMessage({type:"save_clip",data:{title,url}});
+
+    // Wait 600ms for a response — if another tab handles it, close/redirect
+    let handled=false;
+    bc.onmessage=async(e)=>{
+      if(e.data.type==="clip_saved"&&!handled){
+        handled=true;
+        showToast("Page stashed ✓");
+        setTimeout(()=>{
+          if(url&&url.startsWith("http"))window.location.href=url;
+          else history.back();
+        },1000);
+      }
+    };
+
+    await new Promise(r=>setTimeout(r,600));
+    if(handled)return;
+
+    // No unlocked tab responded — check sessionStorage
     const sessionPP=sessionStorage.getItem("__pp");
     const sessionTS=parseInt(sessionStorage.getItem("__pp_ts")||"0");
-    const LOCK_AFTER=24*60*60*1000; // 24 hours
-    const expired=Date.now()-sessionTS>LOCK_AFTER;
+    const expired=Date.now()-sessionTS>24*60*60*1000;
     if(sessionPP&&!expired){
       await initWithPassphrase(sessionPP);
-      checkAndRestoreBackup();checkBackupPrompt();render();
       processClipIfPending();
     } else {
-      // Expired or no session — require passphrase
-      sessionStorage.removeItem("__pp");
-      sessionStorage.removeItem("__pp_ts");
+      sessionStorage.removeItem("__pp");sessionStorage.removeItem("__pp_ts");
       showPassphraseScreen();
     }
+    return;
+  }
+
+  // Normal open — check sessionStorage
+  const sessionPP=sessionStorage.getItem("__pp");
+  const sessionTS=parseInt(sessionStorage.getItem("__pp_ts")||"0");
+  const LOCK_AFTER=24*60*60*1000;
+  const expired=Date.now()-sessionTS>LOCK_AFTER;
+  if(sessionPP&&!expired){
+    await initWithPassphrase(sessionPP);
+    checkAndRestoreBackup();checkBackupPrompt();render();
+    processClipIfPending();
+  } else {
+    sessionStorage.removeItem("__pp");
+    sessionStorage.removeItem("__pp_ts");
+    showPassphraseScreen();
   }
 })();
 </script>
