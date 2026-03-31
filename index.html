@@ -1091,34 +1091,38 @@ $("dupBoth").addEventListener("click",()=>{
 });
 $("dupCancel").addEventListener("click",closeDupSheet);
 
-// Incoming clip — save immediately, redirect back
-(function(){
+// Incoming clip — capture params immediately, process after unlock
+const _clipParams=(function(){
   const p=new URLSearchParams(location.search);
-  let t=p.get("t"),u=p.get("u");
+  const t=p.get("t"),u=p.get("u");
   if(t||u){
     history.replaceState({},"",location.pathname);
-    // Strip literal [ ] brackets that Shortcuts sometimes passes as plain text
-    function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
-    const title=stripBrackets(decodeURIComponent(t||""));
-    const url=stripBrackets(decodeURIComponent(u||""));
-
-    // Check for duplicate before deciding whether to redirect
-    const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===(cleanTitle(title)||"").toLowerCase()));
-    if(dup){
-      const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
-      showDupSheet(dup,newItem);
-      function redirectBack(){setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1000)}
-      $("dupMerge").addEventListener("click",redirectBack,{once:true});
-      $("dupReplace").addEventListener("click",redirectBack,{once:true});
-      $("dupBoth").addEventListener("click",redirectBack,{once:true});
-      $("dupCancel").addEventListener("click",redirectBack,{once:true});
-    } else {
-      addItem({title,url,type:"url",tags:"",description:""},true);
-      showToast("Page stashed ✓");
-      setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1200);
-    }
+    return {t,u};
   }
+  return null;
 })();
+
+function processClipIfPending(){
+  if(!_clipParams)return;
+  const {t,u}=_clipParams;
+  function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
+  const title=stripBrackets(decodeURIComponent(t||""));
+  const url=stripBrackets(decodeURIComponent(u||""));
+  const dup=items.find(i=>(url&&i.url&&i.url===url)||(i.title.toLowerCase()===(cleanTitle(title)||"").toLowerCase()));
+  if(dup){
+    const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
+    showDupSheet(dup,newItem);
+    function redirectBack(){setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1000)}
+    $("dupMerge").addEventListener("click",redirectBack,{once:true});
+    $("dupReplace").addEventListener("click",redirectBack,{once:true});
+    $("dupBoth").addEventListener("click",redirectBack,{once:true});
+    $("dupCancel").addEventListener("click",redirectBack,{once:true});
+  } else {
+    addItem({title,url,type:"url",tags:"",description:""},true);
+    showToast("Page stashed ✓");
+    setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1200);
+  }
+}
 
 // Edit sheet
 let editingId=null;
@@ -1780,7 +1784,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v79";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v80";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1833,6 +1837,7 @@ async function handlePassphrase(){
     $("ppInput").value="";$("ppConfirm").value="";
     $("ppScreen").style.display="none";
     checkAndRestoreBackup();checkBackupPrompt();render();
+    processClipIfPending();
   }catch(e){
     $("ppError").textContent="Something went wrong. Try again.";
     $("ppError").style.display="block";
@@ -1913,6 +1918,7 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     if(sessionPP&&!expired){
       await initWithPassphrase(sessionPP);
       checkAndRestoreBackup();checkBackupPrompt();render();
+      processClipIfPending();
     } else {
       // Expired or no session — require passphrase
       sessionStorage.removeItem("__pp");
