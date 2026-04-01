@@ -607,14 +607,23 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <!-- Passphrase hint — input only, no explainer -->
 <div class="clip-card">
-  <div style="display:flex;align-items:center;gap:10px">
-    <div style="flex:1">
-      <div class="clip-card-title">Passphrase hint</div>
-    </div>
-  </div>
+  <div class="clip-card-title">Passphrase hint</div>
   <input id="ppHintInput" type="text" placeholder="A hint shown on the lock screen…" maxlength="80"
     style="margin-top:10px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);outline:none"/>
   <button onclick="saveHint()" style="margin-top:8px;width:100%;height:38px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Save Hint</button>
+</div>
+
+<!-- Change passphrase -->
+<div class="clip-card">
+  <div class="clip-card-title">Change passphrase</div>
+  <input id="ppCurrentInput" type="password" placeholder="Current passphrase…" autocomplete="current-password"
+    style="margin-top:10px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);outline:none"/>
+  <input id="ppNewInput" type="password" placeholder="New passphrase…" autocomplete="new-password"
+    style="margin-top:8px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);outline:none"/>
+  <input id="ppNewConfirmInput" type="password" placeholder="Confirm new passphrase…" autocomplete="new-password"
+    style="margin-top:8px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);outline:none"/>
+  <div id="ppChangeError" style="font-size:12px;color:var(--danger);margin-top:6px;display:none"></div>
+  <button onclick="changePassphrase()" style="margin-top:8px;width:100%;height:38px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">Change Passphrase</button>
 </div>
 
 <!-- Maintenance -->
@@ -766,7 +775,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     </div>
     <div>
       <div class="clip-card-title">Export</div>
-      <div class="clip-body" style="margin-top:3px">Save all your items as a JSON file. <strong style="color:#FFB347">The exported file is unencrypted</strong> — delete it after importing to another device.</div>
+      <div class="clip-body" style="margin-top:3px">Save an encrypted backup — only openable with your passphrase. Safe to keep in Files.</div>
     </div>
   </div>
 </div>
@@ -945,8 +954,13 @@ const BACKUP_INTERVAL=24*60*60*1000;
 
 function save(){
   if(!cryptoKey||!storageKey)return;
-  if(opfsRoot)opfsWrite(storageKey,items);
-  encryptToBase64(items).then(enc=>localStorage.setItem(storageKey,enc));
+  if(opfsRoot)opfsWrite(storageKey,items).catch(()=>{
+    // OPFS write failed — localStorage shadow is the fallback
+    showToast("Storage warning — data saved to backup ✓");
+  });
+  encryptToBase64(items).then(enc=>localStorage.setItem(storageKey,enc)).catch(()=>{
+    showToast("Save failed — please export a backup ✕");
+  });
   bcPost({type:"item_saved"});
 }
 
@@ -980,16 +994,26 @@ function checkBackupPrompt(){
   if(due){$("backupBanner").classList.add("show")}
 }
 
-function saveToFiles(){
-  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+async function saveToFiles(){
   const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`stash-backup-${date}.json`;
-  a.click();
+  if(cryptoKey){
+    const enc=await encryptToBase64(items);
+    const storedSalt=localStorage.getItem(saltKey);
+    const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
+    const blob=new Blob([payload],{type:"application/json"});
+    a.href=URL.createObjectURL(blob);
+    a.download=`stash-backup-${date}.json`;
+    a.click();
+  } else {
+    const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+    a.href=URL.createObjectURL(blob);
+    a.download=`stash-backup-${date}.json`;
+    a.click();
+  }
   localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
   $("backupBanner").classList.remove("show");
-  showToast("Backup saved to Files ✓");
+  showToast("Backup saved ✓");
 }
 
 $("backupNowBtn").addEventListener("click",saveToFiles);
@@ -1202,10 +1226,26 @@ $("sortSelect").addEventListener("change",()=>{$("itemList")._page=0;render()});
 $("typeFilter").addEventListener("change",()=>{$("itemList")._page=0;render()});
 
 // Export
-$("exportBtn").addEventListener("click",()=>{
-  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="stash-export.json";a.click();
-  showToast("Exported!");
+$("exportBtn").addEventListener("click",async()=>{
+  // Export encrypted — wrapped with passphrase so only owner can import
+  const date=new Date().toISOString().slice(0,10);
+  const a=document.createElement("a");
+  if(cryptoKey){
+    // Encrypted export — includes salt so same passphrase can decrypt on import
+    const enc=await encryptToBase64(items);
+    const storedSalt=localStorage.getItem(saltKey);
+    const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
+    const blob=new Blob([payload],{type:"application/json"});
+    a.href=URL.createObjectURL(blob);
+    a.download=`stash-backup-${date}.json`;
+    a.click();
+    showToast("Encrypted backup saved ✓");
+  } else {
+    // Fallback — plain JSON if no crypto
+    const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
+    a.href=URL.createObjectURL(blob);a.download=`stash-backup-${date}.json`;a.click();
+    showToast("Exported ✓");
+  }
 });
 
 // Clear all
@@ -1328,19 +1368,36 @@ $("restoreFile").addEventListener("change",function(){
   $("restoreActions").style.display="none";
   $("restoreInfo").textContent="";
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try{
-      const data=JSON.parse(e.target.result);
-      if(!Array.isArray(data))throw new Error("Invalid");
-      restoreData=data.filter(i=>i.title&&i.id);
-      const existingIds=new Set(items.map(i=>i.id));
-      const newCount=restoreData.filter(i=>!existingIds.has(i.id)).length;
+      const parsed=JSON.parse(e.target.result);
+
+      // Encrypted backup format
+      if(parsed.v===1&&parsed.encrypted&&parsed.data&&parsed.salt){
+        if(!cryptoKey)throw new Error("Not unlocked");
+        // Decrypt using current passphrase key
+        const dec=await decryptFromBase64(parsed.data);
+        if(!dec||!Array.isArray(dec))throw new Error("Wrong passphrase or corrupt file");
+        restoreData=dec.filter(i=>i.title&&i.id);
+        $("restoreLoading").style.display="none";
+        const newCount=restoreData.filter(i=>!new Set(items.map(i=>i.id)).has(i.id)).length;
+        $("restoreInfo").innerHTML=`Found <strong style="color:var(--text)">${restoreData.length} items</strong> in encrypted backup — <strong style="color:var(--text)">${newCount} new</strong>.`;
+        $("restoreActions").style.display="flex";
+        return;
+      }
+
+      // Plain JSON backup
+      if(!Array.isArray(parsed))throw new Error("Invalid");
+      restoreData=parsed.filter(i=>i.title&&i.id);
+      const newCount=restoreData.filter(i=>!new Set(items.map(i=>i.id)).has(i.id)).length;
       $("restoreLoading").style.display="none";
       $("restoreInfo").innerHTML=`Found <strong style="color:var(--text)">${restoreData.length} items</strong> in backup — <strong style="color:var(--text)">${newCount} new</strong> not in your current stash.`;
       $("restoreActions").style.display="flex";
-    }catch{
+    }catch(err){
       $("restoreLoading").style.display="none";
-      $("restoreInfo").textContent="Couldn't read this file. Make sure it's a valid Stash backup.";
+      $("restoreInfo").textContent=err.message==="Wrong passphrase or corrupt file"
+        ?"This backup was encrypted with a different passphrase."
+        :"Couldn't read this file. Make sure it's a valid Stash backup.";
     }
     this.value="";
   };
@@ -1812,7 +1869,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v112";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v113";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2002,6 +2059,108 @@ async function handlePassphrase(){
 
 // Hint — stored under a derived key name too
 const HINT_KEY="__h";
+async function changePassphrase(){
+  const current=$("ppCurrentInput").value.trim();
+  const newPP=$("ppNewInput").value.trim();
+  const confirm=$("ppNewConfirmInput").value.trim();
+  const err=$("ppChangeError");
+  err.style.display="none";
+
+  if(!current||!newPP||!confirm){err.textContent="Please fill in all fields.";err.style.display="block";return;}
+  if(newPP.length<6){err.textContent="New passphrase must be at least 6 characters.";err.style.display="block";return;}
+  if(newPP===current){err.textContent="New passphrase must be different.";err.style.display="block";return;}
+  if(newPP!==confirm){err.textContent="New passphrases don't match.";err.style.display="block";return;}
+
+  const btn=document.querySelector("[onclick='changePassphrase()']");
+  btn.textContent="Re-encrypting…";btn.disabled=true;
+
+  try{
+    // 1. Verify current passphrase
+    const storedVerifyKey=localStorage.getItem("__sv");
+    if(storedVerifyKey){
+      // Derive keys for current passphrase temporarily
+      await deriveKeyNames(current);
+      const currentVerifyKey=storageKey+"_v";
+      if(storedVerifyKey!==currentVerifyKey){
+        err.textContent="Current passphrase is incorrect.";err.style.display="block";
+        btn.textContent="Change Passphrase";btn.disabled=false;
+        // Restore actual keys
+        await initWithPassphrase(passphrase);
+        return;
+      }
+      const token=localStorage.getItem(currentVerifyKey);
+      const oldCryptoKey=cryptoKey;
+      // Re-derive with current to verify
+      const salt=localStorage.getItem(saltKey);
+      if(salt){
+        const saltBin=atob(salt);
+        const saltArr=new Uint8Array(saltBin.length);
+        for(let i=0;i<saltBin.length;i++)saltArr[i]=saltBin.charCodeAt(i);
+        cryptoKey=await deriveEncKey(current,saltArr);
+      }
+      if(token){
+        const verified=await decryptFromBase64(token);
+        if(verified!=="stash-verified"){
+          err.textContent="Current passphrase is incorrect.";err.style.display="block";
+          btn.textContent="Change Passphrase";btn.disabled=false;
+          await initWithPassphrase(passphrase);
+          return;
+        }
+      }
+    }
+
+    // 2. Get current data (already decrypted in memory)
+    const currentItems=[...items];
+    const currentTrash=[...trash];
+
+    // 3. Derive new keys and re-encrypt everything
+    const oldStorageKey=storageKey;
+    const oldTrashKey=trashKey;
+    const oldSaltKey=saltKey;
+    const oldVerifyKey=storageKey+"_v";
+
+    await initWithPassphrase(newPP);
+
+    // 4. Save data under new keys
+    items=currentItems;
+    trash=currentTrash;
+    save();
+    saveTrash();
+
+    // 5. Store new verify token
+    const newVerifyKey=storageKey+"_v";
+    const newToken=await encryptToBase64("stash-verified");
+    localStorage.setItem(newVerifyKey,newToken);
+    localStorage.setItem("__sv",newVerifyKey);
+
+    // 6. Remove old keys
+    localStorage.removeItem(oldStorageKey);
+    localStorage.removeItem(oldTrashKey);
+    localStorage.removeItem(oldSaltKey);
+    localStorage.removeItem(oldVerifyKey);
+    if(opfsRoot){
+      opfsRoot.removeEntry(oldStorageKey).catch(()=>{});
+      opfsRoot.removeEntry(oldTrashKey).catch(()=>{});
+    }
+
+    // 7. Update session
+    localStorage.setItem("__pp_session",btoa(unescape(encodeURIComponent(newPP))));
+    localStorage.setItem("__pp_ts",Date.now().toString());
+
+    // 8. Clear inputs
+    $("ppCurrentInput").value="";
+    $("ppNewInput").value="";
+    $("ppNewConfirmInput").value="";
+    btn.textContent="Change Passphrase";btn.disabled=false;
+    showToast("Passphrase changed ✓");
+    updateStorageStatus();
+
+  }catch(e){
+    err.textContent="Something went wrong. Try again.";err.style.display="block";
+    btn.textContent="Change Passphrase";btn.disabled=false;
+  }
+}
+
 function saveHint(){
   const hint=$("ppHintInput").value.trim();
   localStorage.setItem(HINT_KEY,hint);
