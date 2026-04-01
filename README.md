@@ -8,6 +8,16 @@ Stash is a privacy-first bookmarking app that runs entirely in your browser. No 
 
 -----
 
+## What Stash is
+
+You can’t stop someone seeing you walk into a library. But what you read, what you underline, what you take notes on — that can be yours alone.
+
+The web works the same way. The moment you search for something, that’s already visible. Stash can’t change that. What it can do is protect everything that comes after — what you chose to keep, what you annotated, what you came back to, the pattern of what matters to you. That layer is genuinely private, and that’s where Stash lives.
+
+In a world where everything knows you, Stash doesn’t. That’s not a small thing.
+
+-----
+
 ## Features
 
 **Saving**
@@ -45,10 +55,10 @@ Stash is a privacy-first bookmarking app that runs entirely in your browser. No 
 
 **How data is stored:**
 
-Every time you open Stash for the first time, you set a passphrase. This is used for two things:
+When you first open Stash you set a passphrase. This does two things:
 
-1. **Deriving storage key names** — the names of the storage keys themselves are a SHA-256 hash of your passphrase. An extension scanning localStorage or OPFS cannot find your data without knowing your passphrase — there is nothing named “stash” or “items” to look for.
-1. **Deriving the AES-256 encryption key** — all data is encrypted using PBKDF2 (200,000 iterations) with your passphrase and a random salt. Without your passphrase the data is unreadable.
+1. **Derives storage key names** — the names of the storage keys themselves are a SHA-256 hash of your passphrase. Nothing in storage is named “stash” or “items”. Without your passphrase you can’t even find the data, let alone read it.
+1. **Derives the AES-256 encryption key** — all data is encrypted using PBKDF2 (200,000 iterations). Without your passphrase the data is unreadable.
 
 Data is stored in two places, both encrypted:
 
@@ -57,11 +67,13 @@ Data is stored in two places, both encrypted:
 
 Your passphrase is never stored anywhere. You can verify your storage status in **⚙️ Settings → Security**.
 
-**Lock policy:** Stash stays unlocked for 24 hours or until you close the tab — whichever comes first. You can also lock manually via Settings → Lock Stash.
+**Lock policy:** Stays unlocked for 24 hours or until you close the tab. Lock manually anytime via Settings → Lock Stash.
 
-**Forgot your passphrase?** Go to Settings → Danger Zone → Export backup & reset. Stash will auto-export an unencrypted backup to Files, wipe all encrypted data, and let you set a new passphrase. Import the backup to restore your items — then delete the backup file from Files as it is unencrypted.
+**Forgot your passphrase?** Settings → Danger Zone → Export backup & reset. Stash auto-exports an unencrypted backup, wipes all encrypted data, and lets you start fresh. Import the backup, then delete the file from Files — it is unencrypted.
 
-> ⚠️ This encryption protects against extension snooping and casual device access. It does not protect against someone who has your unlocked device and knows your passphrase.
+**What Stash doesn’t protect:** The act of searching or browsing is visible to whoever handles your internet traffic. Stash protects what you keep — not how you found it.
+
+> Requires HTTPS — use via GitHub Pages or your own HTTPS host. `crypto.subtle` is not available on plain HTTP.
 
 -----
 
@@ -81,6 +93,8 @@ Your passphrase is never stored anywhere. You can verify your storage status in 
 
 Save any page with one tap. Go to the **🔖 Clip** tab in Stash, copy the bookmarklet code, and add it as a bookmark in your browser. Works in Safari, Chrome, Firefox and Edge.
 
+When Stash is open in another tab, clips are saved silently without asking for your passphrase again. If no tab is open, you’ll be asked to unlock first — your data is worth the extra second.
+
 -----
 
 ## Self-hosting
@@ -99,7 +113,7 @@ Free forever on GitHub Pages.
 
 Stash is local-first by design. Firebase contradicts the privacy philosophy, and iOS makes serverless sync technically impossible — Safari and the home screen PWA use separate storage with no bridge.
 
-Use Stash in Safari for the best experience. Move data between devices via **Share → Export** on one device and **Share → Restore** on the other.
+Move data between devices via **Share → Export** on one device and **Share → Restore** on the other.
 
 -----
 
