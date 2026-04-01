@@ -417,6 +417,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
+
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -1029,10 +1030,11 @@ $("inputTitle").addEventListener("keydown",e=>{if(e.key==="Enter")addItem({})});
 
 function addItem(o,skipDupCheck=false){
   const title=(o.title!==undefined?o.title:$("inputTitle").value).trim();
-  const url=(o.url!==undefined?o.url:$("inputUrl").value).trim();
+  const url=cleanUrl((o.url!==undefined?o.url:$("inputUrl").value).trim());
   // Auto-detect type — if URL is provided it's a web page, otherwise a note
   const type=o.type||(url?"url":"note");
-  const finalTitle=title||(url?tryHostname(url):"");
+  const cleanedTitle=cleanTitle(title);
+  const finalTitle=cleanedTitle||(url?tryHostname(url):"");
   if(!finalTitle){$("formError").classList.remove("hidden");return}
   const tags=(o.tags!==undefined?o.tags:$("inputTags").value).split(",").map(t=>t.trim()).filter(Boolean);
   const description=(o.description!==undefined?o.description:$("inputDesc").value).trim();
@@ -1117,7 +1119,7 @@ function processClipIfPending(){
   const {t,u}=_clipParams;
   function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
   const title=stripBrackets(decodeURIComponent(t||""));
-  const url=stripBrackets(decodeURIComponent(u||""));
+  const url=cleanUrl(stripBrackets(decodeURIComponent(u||"")));
   const dup=items.find(i=>(url&&i.url&&i.url===url)||(cleanTitle(i.title).toLowerCase()===cleanTitle(title).toLowerCase()));
   if(dup){
     const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
@@ -1539,8 +1541,28 @@ $("bulkDeleteConfirm").addEventListener("click",()=>{
   render();showToast(`Moved ${toTrash.length} to Trash`);
 });
 
+function cleanUrl(url){
+  if(!url)return url;
+  try{
+    const u=new URL(url);
+    // Strip Cloudflare challenge tokens
+    u.searchParams.delete("__cf_chl_tk");
+    u.searchParams.delete("__cf_chl_f_tk");
+    // Strip common tracking params
+    ["utm_source","utm_medium","utm_campaign","utm_term","utm_content",
+     "fbclid","gclid","msclkid","ref","source"].forEach(p=>u.searchParams.delete(p));
+    // If no params left, clean up the ?
+    return u.toString();
+  }catch{return url;}
+}
+
 function cleanTitle(t){
   if(!t)return t;
+  // Cloudflare / bot check pages
+  if(/^just a moment/i.test(t.trim()))return "";
+  if(/^please wait/i.test(t.trim()))return "";
+  if(/^access denied/i.test(t.trim()))return "";
+  if(/^checking your browser/i.test(t.trim()))return "";
   return t
     // Search engine suffixes
     .replace(/\s*[-–|]\s*Google Search\s*$/i,"")
@@ -1794,7 +1816,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v106";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v108";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1892,9 +1914,23 @@ async function handlePassphrase(){
     await initWithPassphrase(pp);
 
     // Verify passphrase is correct
+    // __sv stores the verifyKey name (not the token itself) so we can find it
+    // without knowing the passphrase
     const verifyKey=storageKey+"_v";
     if(!isFirstTime){
+      const knownVerifyKey=localStorage.getItem("__sv");
       const token=localStorage.getItem(verifyKey);
+
+      if(knownVerifyKey&&knownVerifyKey!==verifyKey){
+        // We know which verifyKey is correct — this isn't it = wrong passphrase
+        cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+        $("ppError").textContent="Wrong passphrase. Try again.";
+        $("ppError").style.display="block";
+        $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+        $("ppInput").value="";$("ppInput").focus();
+        return;
+      }
+
       if(token){
         // Token exists — must decrypt correctly
         const verified=await decryptFromBase64(token);
@@ -1907,11 +1943,10 @@ async function handlePassphrase(){
           return;
         }
       } else {
-        // Existing user, no token yet — check salt exists + data found
-        const hasSalt=localStorage.getItem(saltKey);
+        // No token yet — existing user migrating
+        // If we can't find any data under this key, it's wrong passphrase
         const hasData=items.length>0||localStorage.getItem(storageKey);
-        if(hasSalt&&!hasData){
-          // Salt set but no data under this key = wrong passphrase
+        if(!hasData){
           cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
           $("ppError").textContent="Wrong passphrase. Try again.";
           $("ppError").style.display="block";
@@ -1919,14 +1954,16 @@ async function handlePassphrase(){
           $("ppInput").value="";$("ppInput").focus();
           return;
         }
-        // Correct — store token for future
+        // Correct — store token and marker
         const newToken=await encryptToBase64("stash-verified");
         localStorage.setItem(verifyKey,newToken);
+        localStorage.setItem("__sv",verifyKey);
       }
     } else {
-      // First time — store token now
+      // First time — store token and marker
       const token=await encryptToBase64("stash-verified");
       localStorage.setItem(verifyKey,token);
+      localStorage.setItem("__sv",verifyKey); // marker so we can find it later
     }
 
     localStorage.setItem(PP_SET_KEY,"1");
@@ -2003,6 +2040,7 @@ function wipeAllData(){
   if(saltKey)localStorage.removeItem(saltKey);
   localStorage.removeItem(PP_SET_KEY);
   localStorage.removeItem(HINT_KEY);
+  localStorage.removeItem("__sv");
   // Clear OPFS
   if(opfsRoot){
     if(storageKey)opfsRoot.removeEntry(storageKey).catch(()=>{});
@@ -2104,7 +2142,7 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     const {t,u}=_clipParams;
     function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
     const title=stripBrackets(decodeURIComponent(t||""));
-    const url=stripBrackets(decodeURIComponent(u||""));
+    const url=cleanUrl(stripBrackets(decodeURIComponent(u||"")));
 
     // Helper to save and redirect
     async function saveAndRedirect(){
