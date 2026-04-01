@@ -22,7 +22,7 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
-
+```
 /* ── Header ── */
 header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
 .logo{font-size:32px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
@@ -179,7 +179,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 #splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
 #splash.hide{opacity:0;pointer-events:none}
 #splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
-
+```
 
   </style>
 </head>
@@ -418,7 +418,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
-
+```
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -468,7 +468,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     />
   </g>
 </g>
-
+```
 
   </svg>
   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
@@ -512,6 +512,16 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   </div>
   <button class="backup-btn" id="backupNowBtn">Save to Files</button>
   <button class="backup-dismiss" id="backupDismissBtn">✕</button>
+</div>
+
+<!-- New user onboarding banner -->
+
+<div id="clipSetupBanner" style="display:none;background:#0a1a2e;border-bottom:1px solid #1a2e4e;padding:11px 16px;gap:10px;align-items:center;flex-wrap:nowrap">
+  <div style="flex:1;font-size:13px;color:#a0c4ff;line-height:1.5">
+    <strong style="color:#c8e0ff">Set up Stash Clip</strong> — save any page with one tap from your browser
+  </div>
+  <button onclick="switchTab('clip')" style="background:#1a3a6a;border:none;color:#c8e0ff;padding:7px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">Set up →</button>
+  <button onclick="dismissClipBanner()" style="background:none;border:none;color:#4a6a9a;cursor:pointer;font-size:18px;padding:0 2px;line-height:1">✕</button>
 </div>
 
 <!-- Bulk delete bar -->
@@ -577,7 +587,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-settings">
   <div class="clip-page">
 
-
+```
 <!-- Security -->
 <div class="settings-section-label">
   <span style="opacity:.6">🔐</span> Security
@@ -662,6 +672,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     <button id="clearAllBtn" style="background:var(--danger);color:#fff;width:100%;height:40px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Delete All Items</button>
   </div>
 </div>
+```
 
   </div>
 </div>
@@ -715,7 +726,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-share">
   <div class="clip-page">
 
-
+```
 <div class="settings-section-label">
   <span style="opacity:.6">↓</span> Import
 </div>
@@ -759,7 +770,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     </div>
   </div>
 </div>
-
+```
 
   </div>
 </div>
@@ -792,7 +803,6 @@ async function deriveKeyNames(pp){
   saltKey=hex.slice(32,48);
 }
 
-// Derive AES key from passphrase + stored salt
 async function deriveEncKey(pp,salt){
   const raw=await crypto.subtle.importKey(
     "raw",new TextEncoder().encode(pp),
@@ -1786,15 +1796,21 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v104";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v106";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
 // Splash — dismiss after box animation completes
-window._splashTimer=setTimeout(()=>{
+// Skip entirely if this is a clip open (no point animating)
+if(_clipParams){
   const s=document.getElementById("splash");
-  if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
-},2200);
+  if(s)s.remove();
+} else {
+  window._splashTimer=setTimeout(()=>{
+    const s=document.getElementById("splash");
+    if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
+  },2200);
+}
 
 // ── Sandbox/preview detection ──
 const isSandboxed=(()=>{
@@ -1928,8 +1944,26 @@ async function handlePassphrase(){
     // Force Safari to repaint
     void ppScreen.offsetHeight;
     checkAndRestoreBackup();checkBackupPrompt();render();
+    if(_clipParams){
+      // Clip was pending — save it now and redirect
+      processClipIfPending();
+      $("ppTitle").textContent="Stashed ✓";
+      const {t}=_clipParams;
+      function sb(s){return s?s.replace(/^\[|\]$/g,"").trim():"";}
+      $("ppSubtitle").textContent=`"${cleanTitle(sb(decodeURIComponent(t||"")))}"`; 
+      setTimeout(()=>{
+        const u=_clipParams.u;
+        const url=sb(decodeURIComponent(u||""));
+        if(url&&url.startsWith("http"))window.location.href=url;
+        else history.back();
+      },300);
+      return;
+    }
     if(isFirstTime){
-      switchTab("clip");
+      switchTab("items");
+      if(!localStorage.getItem("__clip_setup_dismissed")){
+        $("clipSetupBanner").style.display="flex";
+      }
     } else {
       switchTab("items");
     }
@@ -1998,6 +2032,24 @@ function forgotPassphrase(){
   },800);
 }
 
+function dismissClipBanner(){
+  localStorage.setItem("__clip_setup_dismissed","1");
+  $("clipSetupBanner").style.display="none";
+}
+
+function showClipScreen(title){
+  const s=$("ppScreen");
+  s.style.display="flex";s.style.visibility="visible";s.style.zIndex="9998";
+  $("ppTitle").textContent="Stashing…";
+  $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+  $("ppInput").style.display="none";
+  $("ppConfirm").style.display="none";
+  $("ppBtn").style.display="none";
+  $("ppForgotBtn").style.display="none";
+  $("ppHint").textContent="";
+  $("ppError").style.display="none";
+}
+
 function lockStash(){
   if(!confirm("Lock Stash? You'll need your passphrase to unlock."))return;
   cryptoKey=null;passphrase=null;opfsRoot=null;
@@ -2049,35 +2101,47 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     return;
   }
 
-  // If this tab has a clip to save, try delegating to an already-unlocked tab first
+  // If this tab has a clip to save
   if(_clipParams){
     const {t,u}=_clipParams;
     function stripBrackets(s){return s?s.replace(/^\[|\]$/g,"").trim():""}
     const title=stripBrackets(decodeURIComponent(t||""));
     const url=stripBrackets(decodeURIComponent(u||""));
 
-    // Show a minimal "Stashing…" screen — not the passphrase screen
-    const ppScreen=$("ppScreen");
-    ppScreen.style.display="flex";
-    ppScreen.style.visibility="visible";
-    ppScreen.style.zIndex="9998";
-    $("ppTitle").textContent="Stashing…";
-    $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
-    $("ppInput").style.display="none";
-    $("ppConfirm").style.display="none";
-    $("ppBtn").style.display="none";
-    $("ppForgotBtn").style.display="none";
-    $("ppHint").textContent="";
-    $("ppError").style.display="none";
+    // Helper to save and redirect
+    async function saveAndRedirect(){
+      // processClipIfPending will handle dup check and addItem
+      processClipIfPending();
+      $("ppTitle").textContent="Stashed ✓";
+      $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+      setTimeout(()=>{
+        if(url&&url.startsWith("http"))window.location.href=url;
+        else history.back();
+      },300);
+    }
 
-    // Ask any open unlocked tab to handle it
+    // Check session first — if valid, unlock and save without any screen
+    const _raw=localStorage.getItem("__pp_session");
+    const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
+    const sessionTS=parseInt(localStorage.getItem("__pp_ts")||"0");
+    const sessionValid=sessionPP&&(Date.now()-sessionTS<24*60*60*1000);
+
+    if(sessionValid){
+      // Auto-unlock silently — show brief stashing screen
+      showClipScreen(title);
+      await initWithPassphrase(sessionPP);
+      await saveAndRedirect();
+      return;
+    }
+
+    // No valid session — try broadcasting to open unlocked tab
+    showClipScreen(title);
     bcPost({type:"save_clip",data:{title,url}});
 
-    // Wait up to 600ms — resolve immediately if another tab responds
+    let handled=false;
     await new Promise(resolve=>{
       let done=false;
       function finish(){if(!done){done=true;resolve();}}
-
       if(bc)bc.onmessage=async(e)=>{
         if(e.data.type==="clip_saved"&&!done){
           handled=true;
@@ -2090,32 +2154,18 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
           },300);
         }
       };
-
-      // Fallback — give up after 600ms if no tab responds
       setTimeout(finish,600);
     });
     if(handled)return;
 
-    // No response — restore passphrase screen UI and ask for unlock
-    // No unlocked tab responded — check localStorage session first
-    const _raw=localStorage.getItem("__pp_session");
-    const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
-    const sessionTS=parseInt(localStorage.getItem("__pp_ts")||"0");
-    const expired=Date.now()-sessionTS>24*60*60*1000;
-    if(sessionPP&&!expired){
-      // Session still valid — auto-unlock and save silently
-      await initWithPassphrase(sessionPP);
-      checkAndRestoreBackup();render();
-      processClipIfPending();
-    } else {
-      // No valid session — need passphrase
-      localStorage.removeItem("__pp_session");localStorage.removeItem("__pp_ts");
-      $("ppInput").style.display="";
-      $("ppBtn").style.display="";
-      $("ppForgotBtn").style.display="block";
-      showPassphraseScreen();
-      $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
-    }
+    // Nothing worked — ask for passphrase
+    $("ppInput").style.display="";
+    $("ppBtn").style.display="";
+    $("ppForgotBtn").style.display="block";
+    localStorage.removeItem("__pp_session");
+    localStorage.removeItem("__pp_ts");
+    showPassphraseScreen();
+    $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
     return;
   }
 
