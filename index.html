@@ -125,7 +125,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .clip-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.4}
 .clip-step strong{color:var(--text)}
 .clip-icon{width:26px;height:26px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--muted)}
-.settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px}
+.settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px;display:flex;align-items:center;gap:5px}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
@@ -251,7 +251,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <!-- Passphrase screen -->
 
-<div id="ppScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:20px">
+<div id="ppScreen" style="display:flex;position:fixed;inset:0;background:var(--bg);z-index:9998;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:20px">
   <svg width="56" height="56" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
     <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
     <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -273,6 +273,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     <button id="ppBtn" style="width:100%;height:48px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);letter-spacing:-.01em">Unlock</button>
   </div>
   <div id="ppHint" style="font-size:11px;color:var(--dim);text-align:center;max-width:260px;line-height:1.6"></div>
+  <button id="ppForgotBtn" style="display:none;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--font);text-decoration:underline;padding:0" onclick="forgotFromLockScreen()">Forgot passphrase?</button>
 </div>
 
 <!-- Edit sheet -->
@@ -994,17 +995,20 @@ $("backupDismissBtn").addEventListener("click",()=>{
   $("backupBanner").classList.remove("show");
 });
 
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const tab=document.querySelector(`.tab[data-tab="${name}"]`);
+  if(tab)tab.classList.add("active");
+  const page=$("page-"+name);
+  if(page)page.classList.add("active");
+  $("toggleFormBtn").style.display=name==="items"?"":"none";
+  if(name==="settings"){renderTrash();updateStorageStatus();loadHint();}
+}
+
 // Tabs
 document.querySelectorAll(".tab").forEach(tab=>{
-  tab.addEventListener("click",()=>{
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    tab.classList.add("active");
-    $("page-"+tab.dataset.tab).classList.add("active");
-    const onItems=tab.dataset.tab==="items";
-    $("toggleFormBtn").style.display=onItems?"":"none";
-    if(tab.dataset.tab==="settings"){renderTrash();updateStorageStatus();loadHint();}
-  });
+  tab.addEventListener("click",()=>switchTab(tab.dataset.tab));
 });
 // Menu
 
@@ -1784,17 +1788,44 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v89";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v93";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
 // Splash — dismiss after box animation completes
-setTimeout(()=>{
+window._splashTimer=setTimeout(()=>{
   const s=document.getElementById("splash");
   if(s){s.classList.add("hide");setTimeout(()=>s.remove(),400);}
 },2200);
 
-// ── Passphrase flow ──
+// ── Sandbox/preview detection ──
+const isSandboxed=(()=>{
+  try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch{return true;}
+  if(typeof crypto==="undefined"||!crypto.subtle)return true;
+  return false;
+})();
+
+if(isSandboxed){
+  const pp=document.getElementById("ppScreen");
+  if(pp){
+    pp.style.display="flex";
+    pp.innerHTML=`<div style="text-align:center;padding:32px;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:16px">
+      <svg width="56" height="56" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
+        <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
+        <polygon points="14,36 48,18 82,36 48,54" fill="#f0ece4"/>
+        <polygon points="48,54 82,36 82,42 48,60" fill="#b0aa9e"/>
+        <polygon points="14,36 48,54 48,60 14,42" fill="#d4cec4"/>
+      </svg>
+      <div style="font-size:22px;font-weight:700;color:#f0ece4;letter-spacing:-.03em">Stash</div>
+      <div style="font-size:13px;color:#888;line-height:1.8">Stash requires a real browser over HTTPS.<br><br>Open in Safari or Chrome:<br><strong style="color:#f0ece4">ritesh009.github.io/Stash</strong></div>
+    </div>`;
+  }
+  // Stop splash from hiding
+  clearTimeout(window._splashTimer);
+  const splash=document.getElementById("splash");
+  if(splash)splash.remove();
+} else {
 const PP_SET_KEY="__s"; // innocuous key — just marks that a passphrase has been set
 
 function showPassphraseScreen(isLocked=false){
@@ -1806,15 +1837,17 @@ function showPassphraseScreen(isLocked=false){
     $("ppSubtitle").textContent="Choose a passphrase to encrypt your Stash. You can lock and unlock manually from Settings.";
     $("ppConfirm").style.display="block";
     $("ppBtn").textContent="Create Stash";
+    $("ppForgotBtn").style.display="none";
     $("ppHint").textContent="Your passphrase is never stored. If you forget it, your data cannot be recovered.";
   } else {
     $("ppTitle").textContent="Stash";
     $("ppSubtitle").textContent="Stash is locked. Enter your passphrase to unlock.";
     $("ppConfirm").style.display="none";
     $("ppBtn").textContent="Unlock";
+    $("ppForgotBtn").style.display="block";
     const hint=localStorage.getItem(HINT_KEY);
     $("ppHint").textContent=hint?`Hint: ${hint}`:"";
-  }
+  } 
   setTimeout(()=>$("ppInput").focus(),300);
 }
 
@@ -1882,6 +1915,10 @@ async function handlePassphrase(){
     $("ppInput").value="";$("ppConfirm").value="";
     $("ppScreen").style.display="none";
     checkAndRestoreBackup();checkBackupPrompt();render();
+    // New user → go to Clip tab for setup; existing user → Items tab
+    if(isFirstTime){
+      switchTab("clip");
+    }
     processClipIfPending();
   }catch(e){
     $("ppError").textContent="Something went wrong. Try again.";
@@ -1903,53 +1940,63 @@ function loadHint(){
   if($("ppHintInput"))$("ppHintInput").value=hint;
 }
 
+function forgotFromLockScreen(){
+  // Called from lock screen — no items in memory yet, can't export
+  if(!confirm("This will wipe all encrypted data so you can start fresh with a new passphrase.\n\nWarning: you will lose all your stashed items unless you have a backup file.\n\nContinue?"))return;
+  wipeAllData();
+}
+
+function wipeAllData(){
+  // Wipe every possible key — even if storageKey is null, scan for verify tokens
+  // Clear known keys
+  if(storageKey){
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(storageKey+"_v");
+  }
+  if(trashKey)localStorage.removeItem(trashKey);
+  if(saltKey)localStorage.removeItem(saltKey);
+  localStorage.removeItem(PP_SET_KEY);
+  localStorage.removeItem(HINT_KEY);
+  // Clear OPFS
+  if(opfsRoot){
+    if(storageKey)opfsRoot.removeEntry(storageKey).catch(()=>{});
+    if(trashKey)opfsRoot.removeEntry(trashKey).catch(()=>{});
+  }
+  cryptoKey=null;passphrase=null;storageKey=null;trashKey=null;saltKey=null;
+  items=[];trash=[];
+  sessionStorage.removeItem("__pp");
+  sessionStorage.removeItem("__pp_ts");
+}
+
 // Forgot passphrase — export unencrypted backup → wipe → fresh setup
 function forgotPassphrase(){
   if(!confirm("This will export an unencrypted backup of your data to Files, then wipe all encrypted data so you can start fresh.\n\nAfter importing your backup, delete the backup file from Files — it is not encrypted.\n\nContinue?"))return;
-  // Export unencrypted backup first
   const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
   const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   a.download=`stash-backup-${date}.json`;
   a.click();
-  // Wipe all encrypted data
   setTimeout(()=>{
-    // Clear all derived keys from localStorage
-    if(storageKey)localStorage.removeItem(storageKey);
-    if(trashKey)localStorage.removeItem(trashKey);
-    if(saltKey)localStorage.removeItem(saltKey);
-    localStorage.removeItem(PP_SET_KEY);
-    localStorage.removeItem(HINT_KEY);
-    // Clear OPFS
-    if(opfsRoot){
-      opfsRoot.removeEntry(storageKey).catch(()=>{});
-      opfsRoot.removeEntry(trashKey).catch(()=>{});
-    }
-    // Reset memory
-    cryptoKey=null;passphrase=null;storageKey=null;trashKey=null;saltKey=null;
-    items=[];trash=[];
-    sessionStorage.removeItem("__pp");
-    sessionStorage.removeItem("__pp_ts");
+    wipeAllData();
     showToast("Backup saved. Starting fresh…");
     setTimeout(()=>showPassphraseScreen(),1200);
   },800);
 }
 
 function lockStash(){
-  cryptoKey=null;passphrase=null;storageKey=null;trashKey=null;saltKey=null;
-  items=[];trash=[];
-  sessionStorage.removeItem("__pp");
-  sessionStorage.removeItem("__pp_ts");
-  render();
+  if(!confirm("Lock Stash? You'll need your passphrase to unlock."))return;
+  wipeAllData();
   showPassphraseScreen(true);
 }
 
 // ── BroadcastChannel — cross-tab sync and clip delegation ──
-const bc=new BroadcastChannel("stash");
+let bc=null;
+try{bc=new BroadcastChannel("stash");}catch(e){console.warn("BroadcastChannel unavailable",e);}
+function bcPost(msg){try{if(bc)bcPost(msg);}catch(e){}}
 
 // Listen for messages from other tabs
-bc.onmessage=async(e)=>{
+if(bc)bc.onmessage=async(e)=>{
   const {type,data}=e.data;
   if(type==="save_clip"&&cryptoKey){
     // Another tab asked us to save a clip — we're unlocked so we handle it
@@ -1959,7 +2006,7 @@ bc.onmessage=async(e)=>{
       const item={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
       items.unshift(item);save();render();
     }
-    bc.postMessage({type:"clip_saved",data:{title,url,hadDup:!!dup}});
+    bcPost({type:"clip_saved",data:{title,url,hadDup:!!dup}});
   }
   if(type==="item_saved"&&cryptoKey){
     // Another tab saved an item — re-read from storage and re-render
@@ -1972,7 +2019,7 @@ bc.onmessage=async(e)=>{
 const _origSave=save;
 function save(){
   _origSave();
-  bc.postMessage({type:"item_saved"});
+  bcPost({type:"item_saved"});
 }
 
 $("ppBtn").addEventListener("click",handlePassphrase);
@@ -1998,11 +2045,11 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
 
     // Ask any open unlocked tab to handle it
-    bc.postMessage({type:"save_clip",data:{title,url}});
+    bcPost({type:"save_clip",data:{title,url}});
 
     // Wait 600ms for a response — if another tab handles it, close/redirect
     let handled=false;
-    bc.onmessage=async(e)=>{
+    if(bc)bc.onmessage=async(e)=>{
       if(e.data.type==="clip_saved"&&!handled){
         handled=true;
         showToast("Page stashed ✓");
@@ -2045,6 +2092,7 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     showPassphraseScreen();
   }
 })();
+} // end isSandboxed else block
 </script>
 
 </body>
