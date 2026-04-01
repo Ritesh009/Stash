@@ -22,7 +22,7 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
-
+```
 /* ── Header ── */
 header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
 .logo{font-size:32px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
@@ -127,6 +127,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .clip-icon{width:26px;height:26px;border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--muted)}
 .settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px;display:flex;align-items:center;gap:5px}
 .settings-section-label svg{flex-shrink:0;width:12px;height:12px}
+.settings-section-label svg{flex-shrink:0;width:12px;height:12px}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
@@ -179,6 +180,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 #splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
 #splash.hide{opacity:0;pointer-events:none}
 #splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
+```
 
   </style>
 </head>
@@ -417,7 +419,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
-
+```
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -467,7 +469,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     />
   </g>
 </g>
-
+```
 
   </svg>
   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
@@ -586,36 +588,38 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-settings">
   <div class="clip-page">
 
-
+```
 <!-- Security -->
 <div class="settings-section-label">
-  <span style="opacity:.6">🔐</span> Security
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Security
 </div>
+
+<!-- Storage status — compact dot + status only -->
 <div class="clip-card" id="storageStatusCard">
-  <div class="clip-head">
-    <div id="storageStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--dim);flex-shrink:0;margin-top:3px"></div>
-    <div>
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="storageStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0"></div>
       <div class="clip-card-title" id="storageStatusTitle"></div>
-      <div class="clip-body" id="storageStatusDesc" style="margin-top:3px"></div>
     </div>
+    <div id="storageUsage" style="font-size:11px;color:var(--muted)"></div>
   </div>
-  <div id="storageUsage" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
 </div>
+
+<!-- Passphrase hint — input only, no explainer -->
 <div class="clip-card">
-  <div class="clip-head">
-    <div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="flex:1">
       <div class="clip-card-title">Passphrase hint</div>
-      <div class="clip-body" style="margin-top:3px">A hint shown on the lock screen to jog your memory. Never store the passphrase itself here.</div>
     </div>
   </div>
-  <input id="ppHintInput" type="text" placeholder="e.g. favourite childhood place…" maxlength="80"
+  <input id="ppHintInput" type="text" placeholder="A hint shown on the lock screen…" maxlength="80"
     style="margin-top:10px;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);outline:none"/>
   <button onclick="saveHint()" style="margin-top:8px;width:100%;height:38px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Save Hint</button>
 </div>
 
 <!-- Maintenance -->
 <div class="settings-section-label" style="padding-top:8px">
-  <span style="opacity:.6">🔧</span> Maintenance
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Maintenance
 </div>
 <div class="clip-card" style="cursor:pointer" id="findDupsBtn">
   <div class="clip-head">
@@ -642,7 +646,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <!-- Recently Deleted -->
 <div class="settings-section-label" style="padding-top:8px">
-  <span style="opacity:.6">🗑</span> Recently Deleted
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Recently Deleted
 </div>
 <div class="clip-card">
   <div class="clip-body" style="margin-bottom:8px;color:var(--muted);font-size:12px">Items are kept for 30 days before being permanently removed.</div>
@@ -652,26 +656,23 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <!-- Danger Zone -->
 <div class="settings-section-label" style="padding-top:8px">
-  <span style="opacity:.6">⚠️</span> Danger Zone
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Danger Zone
 </div>
 <div class="clip-card" style="border-color:#3a1010;background:#1a0a0a;display:flex;flex-direction:column;gap:10px">
-  <div>
-    <div class="clip-card-title" style="margin-bottom:4px">🔒 Lock Stash</div>
-    <div class="clip-body" style="margin-bottom:8px">Lock now. You'll need your passphrase to unlock.</div>
-    <button onclick="lockStash()" style="background:#1a1a2e;color:#5b9cf6;width:100%;height:40px;border-radius:8px;border:1px solid #2a2a4e;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Lock Stash</button>
-  </div>
-  <div style="border-top:1px solid #3a1010;padding-top:10px">
-    <div class="clip-card-title" style="margin-bottom:4px">Forgot passphrase?</div>
-    <div class="clip-body" style="margin-bottom:8px">This will <strong>auto-export an unencrypted backup</strong> of your data to Files, then wipe all encrypted data so you can start fresh with a new passphrase. After importing your backup, <strong>delete the backup file</strong> from Files — it is not encrypted.</div>
-    <button onclick="forgotPassphrase()" style="background:#2a1a00;color:#FFB347;width:100%;height:40px;border-radius:8px;border:1px solid #3a2a00;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Export backup &amp; reset passphrase</button>
-  </div>
-  <div style="border-top:1px solid #3a1010;padding-top:10px">
-    <div class="clip-card-title" style="margin-bottom:4px">Delete all items</div>
-    <div class="clip-body" style="margin-bottom:8px">Permanently delete everything. This cannot be undone.</div>
-    <button id="clearAllBtn" style="background:var(--danger);color:#fff;width:100%;height:40px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Delete All Items</button>
-  </div>
+  <button onclick="lockStash()" style="background:#1a1a2e;color:#5b9cf6;width:100%;height:40px;border-radius:8px;border:1px solid #2a2a4e;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    Lock Stash
+  </button>
+  <button onclick="forgotPassphrase()" style="background:#2a1a00;color:#FFB347;width:100%;height:40px;border-radius:8px;border:1px solid #3a2a00;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Forgot passphrase — export &amp; reset
+  </button>
+  <button id="clearAllBtn" style="background:transparent;color:var(--danger);width:100%;height:40px;border-radius:8px;border:1px solid #3a1010;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:7px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    Delete all items
+  </button>
 </div>
-
+```
 
   </div>
 </div>
@@ -683,7 +684,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-clip">
   <div class="clip-page">
     <div class="settings-section-label">
-      <span style="opacity:.6">🔖</span> Stash Clip
+      <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Stash Clip
     </div>
     <div class="clip-card">
       <div class="clip-head"><div class="clip-badge">Step 1</div><div class="clip-card-title">Copy the code</div></div>
@@ -725,9 +726,9 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-share">
   <div class="clip-page">
 
-
+```
 <div class="settings-section-label">
-  <span style="opacity:.6">↓</span> Import
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 10 12 15 17 10"/></svg> Import
 </div>
 
 <div class="clip-card" style="cursor:pointer" id="importBtn">
@@ -755,7 +756,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 </div>
 
 <div class="settings-section-label" style="padding-top:8px">
-  <span style="opacity:.6">↑</span> Export
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Export
 </div>
 
 <div class="clip-card" style="cursor:pointer" id="exportBtn">
@@ -769,7 +770,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     </div>
   </div>
 </div>
-
+```
 
   </div>
 </div>
@@ -1785,27 +1786,22 @@ function render(){
 async function updateStorageStatus(){
   const dot=$("storageStatusDot");
   const title=$("storageStatusTitle");
-  const desc=$("storageStatusDesc");
   const usage=$("storageUsage");
   if(!dot)return;
 
   if(opfsRoot&&cryptoKey){
     dot.style.background="#6BCB77";
-    title.textContent="Encrypted · Passphrase + OPFS";
-    desc.textContent="Data encrypted with AES-256 using your passphrase-derived key. Storage key names are also derived from your passphrase — invisible without it.";
+    title.textContent="AES-256 encrypted · OPFS";
     try{
-      const itemsSize=new Blob([JSON.stringify(items)]).size;
-      const trashSize=new Blob([JSON.stringify(trash)]).size;
-      const totalKB=((itemsSize+trashSize)/1024).toFixed(1);
-      usage.textContent=`Stash data: ~${totalKB} KB · ${items.length} items · ${trash.length} in trash`;
+      const kb=((new Blob([JSON.stringify(items)]).size+new Blob([JSON.stringify(trash)]).size)/1024).toFixed(1);
+      usage.textContent=`~${kb} KB · ${items.length} items`;
     }catch{}
   } else {
     dot.style.background="#FFB347";
-    title.textContent="Encrypted · Passphrase (localStorage)";
-    desc.textContent="OPFS unavailable — using encrypted localStorage. Data is AES-256 encrypted with your passphrase. Key names derived from passphrase — unsearchable.";
+    title.textContent="AES-256 encrypted · localStorage";
     try{
-      const bytes=new Blob([JSON.stringify(items)]).size;
-      usage.textContent=`Stash data: ~${(bytes/1024).toFixed(1)} KB · ${items.length} items`;
+      const kb=(new Blob([JSON.stringify(items)]).size/1024).toFixed(1);
+      usage.textContent=`~${kb} KB · ${items.length} items`;
     }catch{}
   }
 }
@@ -1816,7 +1812,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v108";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v110";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
