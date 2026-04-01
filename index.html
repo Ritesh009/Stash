@@ -22,7 +22,6 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
-```
 /* ── Header ── */
 header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:calc(var(--safe-top) + 14px) 16px 14px}
 .logo{font-size:32px;font-weight:700;letter-spacing:-.04em;color:var(--text)}
@@ -180,7 +179,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 #splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .4s ease}
 #splash.hide{opacity:0;pointer-events:none}
 #splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
-```
+
 
   </style>
 </head>
@@ -419,7 +418,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
-```
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -469,7 +467,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     />
   </g>
 </g>
-```
+
 
   </svg>
   <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center">
@@ -588,7 +586,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-settings">
   <div class="clip-page">
 
-```
 <!-- Security -->
 <div class="settings-section-label">
   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Security
@@ -672,7 +669,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     Delete all items
   </button>
 </div>
-```
+
 
   </div>
 </div>
@@ -726,7 +723,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <div class="page" id="page-share">
   <div class="clip-page">
 
-```
 <div class="settings-section-label">
   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><line x1="12" y1="3" x2="12" y2="15"/><polyline points="7 10 12 15 17 10"/></svg> Import
 </div>
@@ -770,7 +766,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
     </div>
   </div>
 </div>
-```
+
 
   </div>
 </div>
@@ -1812,7 +1808,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v110";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v111";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1914,21 +1910,10 @@ async function handlePassphrase(){
     // without knowing the passphrase
     const verifyKey=storageKey+"_v";
     if(!isFirstTime){
-      const knownVerifyKey=localStorage.getItem("__sv");
       const token=localStorage.getItem(verifyKey);
 
-      if(knownVerifyKey&&knownVerifyKey!==verifyKey){
-        // We know which verifyKey is correct — this isn't it = wrong passphrase
-        cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-        $("ppError").textContent="Wrong passphrase. Try again.";
-        $("ppError").style.display="block";
-        $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-        $("ppInput").value="";$("ppInput").focus();
-        return;
-      }
-
       if(token){
-        // Token exists — must decrypt correctly
+        // Verify token exists — try to decrypt it
         const verified=await decryptFromBase64(token);
         if(verified!=="stash-verified"){
           cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
@@ -1939,18 +1924,9 @@ async function handlePassphrase(){
           return;
         }
       } else {
-        // No token yet — existing user migrating
-        // If we can't find any data under this key, it's wrong passphrase
-        const hasData=items.length>0||localStorage.getItem(storageKey);
-        if(!hasData){
-          cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-          $("ppError").textContent="Wrong passphrase. Try again.";
-          $("ppError").style.display="block";
-          $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-          $("ppInput").value="";$("ppInput").focus();
-          return;
-        }
-        // Correct — store token and marker
+        // No verify token yet — store one now if data loaded correctly
+        // If items loaded, passphrase was correct (decryption succeeded)
+        // If no data at all yet (empty stash), we can't verify — accept and store token
         const newToken=await encryptToBase64("stash-verified");
         localStorage.setItem(verifyKey,newToken);
         localStorage.setItem("__sv",verifyKey);
