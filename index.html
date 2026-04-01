@@ -1790,7 +1790,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v97";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v99";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2060,8 +2060,19 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     const title=stripBrackets(decodeURIComponent(t||""));
     const url=stripBrackets(decodeURIComponent(u||""));
 
-    // Update passphrase screen to show context
-    $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
+    // Show a minimal "Stashing…" screen — not the passphrase screen
+    const ppScreen=$("ppScreen");
+    ppScreen.style.display="flex";
+    ppScreen.style.visibility="visible";
+    ppScreen.style.zIndex="9998";
+    $("ppTitle").textContent="Stashing…";
+    $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+    $("ppInput").style.display="none";
+    $("ppConfirm").style.display="none";
+    $("ppBtn").style.display="none";
+    $("ppForgotBtn").style.display="none";
+    $("ppHint").textContent="";
+    $("ppError").style.display="none";
 
     // Ask any open unlocked tab to handle it
     bcPost({type:"save_clip",data:{title,url}});
@@ -2071,16 +2082,24 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     if(bc)bc.onmessage=async(e)=>{
       if(e.data.type==="clip_saved"&&!handled){
         handled=true;
-        showToast("Page stashed ✓");
+        $("ppTitle").textContent="Stashed ✓";
+        $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
         setTimeout(()=>{
           if(url&&url.startsWith("http"))window.location.href=url;
           else history.back();
-        },1000);
+        },300);
       }
     };
 
     await new Promise(r=>setTimeout(r,600));
     if(handled)return;
+
+    // No response — restore passphrase screen UI and ask for unlock
+    $("ppInput").style.display="";
+    $("ppBtn").style.display="";
+    $("ppForgotBtn").style.display="block";
+    showPassphraseScreen();
+    $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
 
     // No unlocked tab responded — check localStorage session
     const _raw=localStorage.getItem("__pp_session");const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
