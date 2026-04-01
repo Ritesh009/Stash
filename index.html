@@ -36,7 +36,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,16,.95);backdrop-
 .btn-primary{background:var(--text);color:var(--bg);font-weight:600}
 .btn-primary:active{opacity:.8}
 
-/* ── Dropdown Menu── */
+/* ── Dropdown ── */
 .menu-wrap{position:relative}
 .dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#18181d;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;z-index:200;min-width:210px;box-shadow:0 20px 50px rgba(0,0,0,.7);display:none}
 .dropdown.open{display:block;animation:fadeDown .15s ease}
@@ -1790,7 +1790,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v96";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v97";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1835,6 +1835,12 @@ function showPassphraseScreen(isLocked=false){
   screen.style.display="flex";
   screen.style.visibility="visible";
   screen.style.pointerEvents="auto";
+  screen.style.zIndex="9998";
+  // Always reset button state
+  $("ppBtn").disabled=false;
+  $("ppInput").value="";
+  $("ppConfirm").value="";
+  $("ppError").style.display="none";
   const isFirstTime=!localStorage.getItem(PP_SET_KEY);
   if(isFirstTime){
     $("ppTitle").textContent="Set your passphrase";
@@ -1917,11 +1923,14 @@ async function handlePassphrase(){
     localStorage.setItem("__pp_session",btoa(unescape(encodeURIComponent(pp))));
     localStorage.setItem("__pp_ts",Date.now().toString());
     $("ppInput").value="";$("ppConfirm").value="";
-    // Fully hide passphrase screen
+    // Fully hide passphrase screen and force reflow
     const ppScreen=$("ppScreen");
     ppScreen.style.display="none";
     ppScreen.style.visibility="hidden";
     ppScreen.style.pointerEvents="none";
+    ppScreen.style.zIndex="-1";
+    // Force Safari to repaint
+    void ppScreen.offsetHeight;
     checkAndRestoreBackup();checkBackupPrompt();render();
     if(isFirstTime){
       switchTab("clip");
@@ -1995,9 +2004,7 @@ function forgotPassphrase(){
 
 function lockStash(){
   if(!confirm("Lock Stash? You'll need your passphrase to unlock."))return;
-  // Only clear in-memory keys and session — NOT the encrypted data
-  cryptoKey=null;passphrase=null;
-  const _sk=storageKey,_tk=trashKey,_salt=saltKey;
+  cryptoKey=null;passphrase=null;opfsRoot=null;
   storageKey=null;trashKey=null;saltKey=null;
   items=[];trash=[];
   localStorage.removeItem("__pp_session");
