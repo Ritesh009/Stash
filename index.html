@@ -663,7 +663,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
   </div>
 </div>
 
-
   </div>
 </div>
 
@@ -1787,7 +1786,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v103";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v104";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2074,41 +2073,48 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
     // Ask any open unlocked tab to handle it
     bcPost({type:"save_clip",data:{title,url}});
 
-    // Wait 600ms for a response — if another tab handles it, close/redirect
-    let handled=false;
-    if(bc)bc.onmessage=async(e)=>{
-      if(e.data.type==="clip_saved"&&!handled){
-        handled=true;
-        $("ppTitle").textContent="Stashed ✓";
-        $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
-        setTimeout(()=>{
-          if(url&&url.startsWith("http"))window.location.href=url;
-          else history.back();
-        },300);
-      }
-    };
+    // Wait up to 600ms — resolve immediately if another tab responds
+    await new Promise(resolve=>{
+      let done=false;
+      function finish(){if(!done){done=true;resolve();}}
 
-    await new Promise(r=>setTimeout(r,600));
+      if(bc)bc.onmessage=async(e)=>{
+        if(e.data.type==="clip_saved"&&!done){
+          handled=true;
+          $("ppTitle").textContent="Stashed ✓";
+          $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+          finish();
+          setTimeout(()=>{
+            if(url&&url.startsWith("http"))window.location.href=url;
+            else history.back();
+          },300);
+        }
+      };
+
+      // Fallback — give up after 600ms if no tab responds
+      setTimeout(finish,600);
+    });
     if(handled)return;
 
     // No response — restore passphrase screen UI and ask for unlock
-    $("ppInput").style.display="";
-    $("ppBtn").style.display="";
-    $("ppForgotBtn").style.display="block";
-    showPassphraseScreen();
-    $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
-
-    // No unlocked tab responded — check localStorage session
-    const _raw=localStorage.getItem("__pp_session");const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
+    // No unlocked tab responded — check localStorage session first
+    const _raw=localStorage.getItem("__pp_session");
+    const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
     const sessionTS=parseInt(localStorage.getItem("__pp_ts")||"0");
     const expired=Date.now()-sessionTS>24*60*60*1000;
     if(sessionPP&&!expired){
+      // Session still valid — auto-unlock and save silently
       await initWithPassphrase(sessionPP);
       checkAndRestoreBackup();render();
       processClipIfPending();
     } else {
+      // No valid session — need passphrase
       localStorage.removeItem("__pp_session");localStorage.removeItem("__pp_ts");
+      $("ppInput").style.display="";
+      $("ppBtn").style.display="";
+      $("ppForgotBtn").style.display="block";
       showPassphraseScreen();
+      $("ppSubtitle").textContent=`Unlock to save: "${cleanTitle(title)}"`;
     }
     return;
   }
