@@ -1905,7 +1905,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v122";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v123";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2352,10 +2352,18 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
 
     // Helper to save and redirect
     async function saveAndRedirect(){
-      // processClipIfPending will handle dup check and addItem
+      const cleanedTitle=cleanTitle(title);
+      const dupItem=items.find(i=>(url&&i.url&&i.url===url)||(cleanTitle(i.title).toLowerCase()===(cleanedTitle||"").toLowerCase()));
+      if(dupItem){
+        // Dup found — show sheet, don't redirect automatically
+        $("ppTitle").textContent="Already Stashed";
+        $("ppSubtitle").textContent=`"${cleanedTitle}" is already in your Stash`;
+        processClipIfPending(); // shows dup sheet
+        return;
+      }
       processClipIfPending();
       $("ppTitle").textContent="Stashed ✓";
-      $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+      $("ppSubtitle").textContent=`"${cleanedTitle}"`;
       setTimeout(()=>{
         if(url&&url.startsWith("http"))window.location.href=url;
         else history.back();
@@ -2387,8 +2395,14 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
       if(bc)bc.onmessage=async(e)=>{
         if(e.data.type==="clip_saved"&&!done){
           handled=true;
-          $("ppTitle").textContent="Stashed ✓";
-          $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+          const hadDup=e.data.data&&e.data.data.hadDup;
+          if(hadDup){
+            $("ppTitle").textContent="Already Stashed";
+            $("ppSubtitle").textContent=`"${cleanTitle(title)}" is already in your Stash`;
+          } else {
+            $("ppTitle").textContent="Stashed ✓";
+            $("ppSubtitle").textContent=`"${cleanTitle(title)}"`;
+          }
           finish();
           setTimeout(()=>{
             if(url&&url.startsWith("http"))window.location.href=url;
