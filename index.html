@@ -981,17 +981,47 @@ const BACKUP_TIME_KEY="stash_last_backup";
 const BACKUP_SCHEDULE_KEY="stash_backup_schedule"; // daily | weekly | monthly | off
 const BACKUP_INTERVALS={daily:24*60*60*1000,weekly:7*24*60*60*1000,monthly:30*24*60*60*1000,off:Infinity};
 
-function save(){
+async function save(){
   if(!cryptoKey||!storageKey)return;
-  // Always write to localStorage first — reliable even after iOS suspension
-  encryptToBase64(items).then(enc=>{
-    localStorage.setItem(storageKey,enc);
-  }).catch(()=>{
-    showToast("Save failed — please export a backup ✕");
-  });
-  // OPFS write — silently retries on stale handle (re-acquired in opfsWrite)
-  opfsWrite(storageKey,items).catch(()=>{});
-  bcPost({type:"item_saved"});
+  try{
+    const enc=await encryptToBase64(items);
+    if(!enc)throw new Error("encryption_failed");
+    try{
+      localStorage.setItem(storageKey,enc);
+    }catch(lsErr){
+      // localStorage quota exceeded — OPFS is primary anyway, this is just shadow
+      if(lsErr.name==="QuotaExceededError"||lsErr.code===22){
+        showToast("Storage nearly full — go to Share → Export to back up ⚠️");
+        // Try to free space by removing old shadow keys
+        try{localStorage.removeItem(storageKey);}catch{}
+      }
+    }
+    // OPFS is primary — silently retries stale handle
+    opfsWrite(storageKey,items).catch(()=>{});
+    bcPost({type:"item_saved"});
+  }catch(e){
+    if(e.message==="encryption_failed"){
+      showToast("Save failed — please reload Stash ✕");
+      return;
+    }
+    // cryptoKey may be stale — re-derive from session and retry once
+    const _raw=localStorage.getItem("__pp_session");
+    const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
+    const sessionTS=parseInt(localStorage.getItem("__pp_ts")||"0");
+    if(sessionPP&&(Date.now()-sessionTS<24*60*60*1000)){
+      await initWithPassphrase(sessionPP);
+      try{
+        const enc2=await encryptToBase64(items);
+        localStorage.setItem(storageKey,enc2);
+        opfsWrite(storageKey,items).catch(()=>{});
+        bcPost({type:"item_saved"});
+      }catch{
+        showToast("Save failed — please reload Stash ✕");
+      }
+    } else {
+      showToast("Session expired — please unlock Stash again ✕");
+    }
+  }
 }
 
 function saveTrash(){
@@ -1088,7 +1118,7 @@ $("toggleFormBtn").addEventListener("click",()=>{
 $("saveBtn").addEventListener("click",()=>addItem({}));
 $("inputTitle").addEventListener("keydown",e=>{if(e.key==="Enter")addItem({})});
 
-function addItem(o,skipDupCheck=false){
+async function addItem(o,skipDupCheck=false){
   const title=(o.title!==undefined?o.title:$("inputTitle").value).trim();
   const url=cleanUrl((o.url!==undefined?o.url:$("inputUrl").value).trim());
   // Auto-detect type — if URL is provided it's a web page, otherwise a note
@@ -1115,11 +1145,12 @@ function addItem(o,skipDupCheck=false){
   }
 
   items.unshift(newItem);
-  save();
+  await save();
   $("inputTitle").value="";$("inputDesc").value="";$("inputTags").value="";$("inputUrl").value="";
   $("formError").classList.add("hidden");
   formOpen=false;$("formPanel").classList.add("hidden");$("toggleFormBtn").textContent="+ Add";
   render();
+  showToast("Stashed ✓");
 }
 function tryHostname(url){try{return new URL(url).hostname}catch{return url.slice(0,40)}}
 
@@ -1882,21 +1913,35 @@ async function updateStorageStatus(){
   const usage=$("storageUsage");
   if(!dot)return;
 
+  // Check actual storage quota via navigator.storage API
+  let quotaWarning="";
+  try{
+    const est=await navigator.storage.estimate();
+    if(est.quota&&est.usage){
+      const pct=Math.round(est.usage/est.quota*100);
+      const usedMB=(est.usage/1024/1024).toFixed(1);
+      const totalMB=(est.quota/1024/1024).toFixed(0);
+      if(pct>80)quotaWarning=` · ⚠️ ${pct}% full`;
+      usage.textContent=`${usedMB}MB / ${totalMB}MB used · ${items.length} items${quotaWarning}`;
+      if(pct>80){dot.style.background="#FF6B6B";title.textContent="AES-256 encrypted · Storage nearly full";}
+      else if(opfsRoot&&cryptoKey){dot.style.background="#6BCB77";title.textContent="AES-256 encrypted · OPFS";}
+      else{dot.style.background="#FFB347";title.textContent="AES-256 encrypted · localStorage";}
+      return;
+    }
+  }catch{}
+
+  // Fallback — estimate from item data size
   if(opfsRoot&&cryptoKey){
     dot.style.background="#6BCB77";
     title.textContent="AES-256 encrypted · OPFS";
-    try{
-      const kb=((new Blob([JSON.stringify(items)]).size+new Blob([JSON.stringify(trash)]).size)/1024).toFixed(1);
-      usage.textContent=`~${kb} KB · ${items.length} items`;
-    }catch{}
   } else {
     dot.style.background="#FFB347";
     title.textContent="AES-256 encrypted · localStorage";
-    try{
-      const kb=(new Blob([JSON.stringify(items)]).size/1024).toFixed(1);
-      usage.textContent=`~${kb} KB · ${items.length} items`;
-    }catch{}
   }
+  try{
+    const kb=((new Blob([JSON.stringify(items)]).size+new Blob([JSON.stringify(trash)]).size)/1024).toFixed(1);
+    usage.textContent=`~${kb} KB · ${items.length} items`;
+  }catch{}
 }
 
 function pill(label,active){
@@ -1905,7 +1950,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v124";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v127";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2286,14 +2331,16 @@ function lockStash(){
 
 // ── BroadcastChannel — cross-tab sync and clip delegation ──
 let bc=null;
+const TAB_ID=Date.now()+Math.random(); // unique ID for this tab
 try{bc=new BroadcastChannel("stash");}catch(e){console.warn("BroadcastChannel unavailable",e);}
-function bcPost(msg){try{if(bc)bc.postMessage(msg);}catch(e){}}
+function bcPost(msg){try{if(bc)bc.postMessage({...msg,_tabId:TAB_ID});}catch(e){}}
 
 // Listen for messages from other tabs
 if(bc)bc.onmessage=async(e)=>{
-  const {type,data}=e.data;
+  const {type,data,_tabId}=e.data;
+  // Ignore our own messages
+  if(_tabId===TAB_ID)return;
   if(type==="save_clip"&&cryptoKey){
-    // Another tab asked us to save a clip — we're unlocked so we handle it
     const {title,url}=data;
     const dup=items.find(i=>(url&&i.url&&i.url===url)||(cleanTitle(i.title).toLowerCase()===cleanTitle(title).toLowerCase()));
     if(!dup){
@@ -2303,7 +2350,8 @@ if(bc)bc.onmessage=async(e)=>{
     bcPost({type:"clip_saved",data:{title,url,hadDup:!!dup}});
   }
   if(type==="item_saved"&&cryptoKey&&storageKey){
-    // Another tab saved — re-read and re-render
+    // Another tab saved — wait briefly for their write to complete then sync
+    await new Promise(r=>setTimeout(r,300));
     const fresh=await opfsRead(storageKey);
     if(fresh){items=fresh;render();}
     else{
@@ -2313,21 +2361,24 @@ if(bc)bc.onmessage=async(e)=>{
   }
 };
 
-// Re-acquire OPFS when tab comes back from iOS background suspension
+// Re-acquire OPFS and re-derive crypto key when tab returns from iOS background
 document.addEventListener("visibilitychange",async()=>{
-  if(document.visibilityState==="visible"&&cryptoKey&&storageKey){
-    try{
-      const newRoot=await navigator.storage.getDirectory();
-      if(newRoot){
-        opfsRoot=newRoot;
-        // Re-save to ensure OPFS is in sync with in-memory state
-        if(items.length>0)await opfsWrite(storageKey,items);
-        if(trash.length>0)await opfsWrite(trashKey,trash);
+  if(document.visibilityState==="visible"&&storageKey){
+    // Re-derive crypto key from session if needed — iOS can invalidate Web Crypto keys
+    if(!cryptoKey){
+      const _raw=localStorage.getItem("__pp_session");
+      const sessionPP=_raw?decodeURIComponent(escape(atob(_raw))):null;
+      const sessionTS=parseInt(localStorage.getItem("__pp_ts")||"0");
+      if(sessionPP&&(Date.now()-sessionTS<24*60*60*1000)){
+        await initWithPassphrase(sessionPP);
+        render();
+        return;
       }
-    }catch(e){
-      // OPFS unavailable — localStorage shadow will handle saves
-      opfsRoot=null;
     }
+    // Re-acquire OPFS root — may have gone stale
+    try{
+      opfsRoot=await navigator.storage.getDirectory();
+    }catch{opfsRoot=null;}
   }
 });
 
