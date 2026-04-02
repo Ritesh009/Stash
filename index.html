@@ -422,7 +422,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
-
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -889,7 +888,10 @@ async function opfsRead(filename){
 }
 
 async function opfsWrite(filename,data){
-  if(!opfsRoot)return false;
+  if(!opfsRoot){
+    // Try to re-acquire OPFS root — may have gone stale after iOS suspension
+    try{opfsRoot=await navigator.storage.getDirectory();}catch{return false;}
+  }
   try{
     const fh=await opfsRoot.getFileHandle(filename,{create:true});
     const writable=await fh.createWritable();
@@ -980,20 +982,21 @@ const BACKUP_INTERVALS={daily:24*60*60*1000,weekly:7*24*60*60*1000,monthly:30*24
 
 function save(){
   if(!cryptoKey||!storageKey)return;
-  if(opfsRoot)opfsWrite(storageKey,items).catch(()=>{
-    // OPFS write failed — localStorage shadow is the fallback
-    showToast("Storage warning — data saved to backup ✓");
-  });
-  encryptToBase64(items).then(enc=>localStorage.setItem(storageKey,enc)).catch(()=>{
+  // Always write to localStorage first — reliable even after iOS suspension
+  encryptToBase64(items).then(enc=>{
+    localStorage.setItem(storageKey,enc);
+  }).catch(()=>{
     showToast("Save failed — please export a backup ✕");
   });
+  // OPFS write — silently retries on stale handle (re-acquired in opfsWrite)
+  opfsWrite(storageKey,items).catch(()=>{});
   bcPost({type:"item_saved"});
 }
 
 function saveTrash(){
   if(!cryptoKey||!trashKey)return;
-  if(opfsRoot)opfsWrite(trashKey,trash);
-  encryptToBase64(trash).then(enc=>localStorage.setItem(trashKey,enc));
+  encryptToBase64(trash).then(enc=>localStorage.setItem(trashKey,enc)).catch(()=>{});
+  opfsWrite(trashKey,trash).catch(()=>{});
 }
 
 function checkAndRestoreBackup(){
@@ -1899,7 +1902,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v120";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v121";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2306,6 +2309,24 @@ if(bc)bc.onmessage=async(e)=>{
     }
   }
 };
+
+// Re-acquire OPFS when tab comes back from iOS background suspension
+document.addEventListener("visibilitychange",async()=>{
+  if(document.visibilityState==="visible"&&cryptoKey&&storageKey){
+    try{
+      const newRoot=await navigator.storage.getDirectory();
+      if(newRoot){
+        opfsRoot=newRoot;
+        // Re-save to ensure OPFS is in sync with in-memory state
+        if(items.length>0)await opfsWrite(storageKey,items);
+        if(trash.length>0)await opfsWrite(trashKey,trash);
+      }
+    }catch(e){
+      // OPFS unavailable — localStorage shadow will handle saves
+      opfsRoot=null;
+    }
+  }
+});
 
 $("ppBtn").addEventListener("click",handlePassphrase);
 $("ppInput").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphrase()});
