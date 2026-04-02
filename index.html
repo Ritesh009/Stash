@@ -422,6 +422,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
         keySplines="0 0 1 1; 0 0 1 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0.2 0 0.2 1; 0 0 1 1"
       />
 
+
   <!-- Box body -->
   <polygon points="48,54 82,36 82,74 48,92" fill="#c8c2b6"/>
   <polygon points="14,36 48,54 48,92 14,74" fill="#e8e2d6"/>
@@ -1107,6 +1108,7 @@ function addItem(o,skipDupCheck=false){
       (cleanTitle(i.title).toLowerCase()===cleanedNew)
     );
     if(dup){
+      showToast("Already in your Stash — merge or replace?");
       showDupSheet(dup, newItem);
       return;
     }
@@ -1182,6 +1184,7 @@ function processClipIfPending(){
   const dup=items.find(i=>(url&&i.url&&i.url===url)||(cleanTitle(i.title).toLowerCase()===cleanTitle(title).toLowerCase()));
   if(dup){
     const newItem={id:Date.now()+Math.random(),type:"url",title,description:"",url,tags:[],createdAt:Date.now()};
+    showToast("Already in your Stash — merge or replace?");
     showDupSheet(dup,newItem);
     function redirectBack(){setTimeout(()=>{if(url&&url.startsWith("http"))window.location.href=url;else history.back()},1000)}
     $("dupMerge").addEventListener("click",redirectBack,{once:true});
@@ -1902,7 +1905,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v121";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v122";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
