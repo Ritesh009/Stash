@@ -1905,7 +1905,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v123";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v124";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2355,10 +2355,12 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
       const cleanedTitle=cleanTitle(title);
       const dupItem=items.find(i=>(url&&i.url&&i.url===url)||(cleanTitle(i.title).toLowerCase()===(cleanedTitle||"").toLowerCase()));
       if(dupItem){
-        // Dup found — show sheet, don't redirect automatically
         $("ppTitle").textContent="Already Stashed";
         $("ppSubtitle").textContent=`"${cleanedTitle}" is already in your Stash`;
-        processClipIfPending(); // shows dup sheet
+        setTimeout(()=>{
+          if(url&&url.startsWith("http"))window.location.href=url;
+          else history.back();
+        },1500);
         return;
       }
       processClipIfPending();
@@ -2407,7 +2409,7 @@ $("ppConfirm").addEventListener("keydown",e=>{if(e.key==="Enter")handlePassphras
           setTimeout(()=>{
             if(url&&url.startsWith("http"))window.location.href=url;
             else history.back();
-          },300);
+          },hadDup?1500:300);
         }
       };
       setTimeout(finish,600);
