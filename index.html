@@ -184,7 +184,6 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 #splash.hide{opacity:0;pointer-events:none}
 #splash-label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:500}
 
-
   </style>
 </head>
 <body>
@@ -869,6 +868,11 @@ async function decryptFromBase64(b64){
     for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
     return await decryptData(buf);
   }catch{return null;}
+}
+
+async function opfsHasFile(filename){
+  if(!opfsRoot)return false;
+  try{await opfsRoot.getFileHandle(filename);return true;}catch{return false;}
 }
 
 async function opfsRead(filename){
@@ -1892,7 +1896,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v115";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v117";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1989,65 +1993,38 @@ async function handlePassphrase(){
   try{
     await initWithPassphrase(pp);
 
-    // ── Passphrase verification ──
-    const verifyKey=storageKey+"_v";
-
+    // ── Wrong passphrase detection via data decryption ──
+    // AES-GCM throws on wrong key — items stays [] if decryption failed
+    // Only reject if: encrypted data EXISTS but decrypted to nothing
+    // (not just an empty stash — we check both OPFS and localStorage)
     if(!isFirstTime){
-      const storedVerifyKey=localStorage.getItem("__sv");
-
-      if(storedVerifyKey){
-        if(storedVerifyKey===verifyKey){
-          // Key name matches — verify token decrypts correctly
-          const token=localStorage.getItem(verifyKey);
-          if(token){
-            const verified=await decryptFromBase64(token);
-            if(verified!=="stash-verified"){
-              cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-              $("ppError").textContent="Wrong passphrase. Try again.";
-              $("ppError").style.display="block";
-              $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-              $("ppInput").value="";$("ppInput").focus();
-              return;
-            }
-          }
-        } else {
-          // Key name mismatch — could be version change or corruption
-          // Try to decrypt the stored token as a fallback before rejecting
-          const storedToken=localStorage.getItem(storedVerifyKey);
-          if(storedToken){
-            const verified=await decryptFromBase64(storedToken);
-            if(verified==="stash-verified"){
-              // Correct passphrase — update __sv to new derived key
-              const newToken=await encryptToBase64("stash-verified");
-              localStorage.setItem(verifyKey,newToken);
-              localStorage.setItem("__sv",verifyKey);
-              localStorage.removeItem(storedVerifyKey);
-            } else {
-              // Wrong passphrase — both checks failed
-              cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-              $("ppError").textContent="Wrong passphrase. Try again.";
-              $("ppError").style.display="block";
-              $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-              $("ppInput").value="";$("ppInput").focus();
-              return;
-            }
-          } else {
-            // No token at stored key either — __sv is stale, reset it
-            const newToken=await encryptToBase64("stash-verified");
-            localStorage.setItem(verifyKey,newToken);
-            localStorage.setItem("__sv",verifyKey);
-          }
+      const lsData=localStorage.getItem(storageKey);
+      const opfsData=await opfsHasFile(storageKey);
+      const hasStorage=lsData||opfsData;
+      // If data exists in storage but items is empty — wrong passphrase
+      // Exception: if trash has items, stash could legitimately be empty
+      if(hasStorage&&items.length===0&&trash.length===0){
+        // Do one more check — try to read raw data to confirm it exists
+        // (storageKey in localStorage means real encrypted data, not just a key)
+        if(lsData&&lsData.length>20){
+          cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+          $("ppError").textContent="Wrong passphrase. Try again.";
+          $("ppError").style.display="block";
+          $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+          $("ppForgotBtn").style.display="block";
+          $("ppInput").value="";$("ppInput").focus();
+          return;
         }
-      } else {
-        // No __sv yet — existing user from before this fix
-        const newToken=await encryptToBase64("stash-verified");
-        localStorage.setItem(verifyKey,newToken);
-        localStorage.setItem("__sv",verifyKey);
       }
-    } else {
-      // First time — store verify token and pointer
+    }
+
+    // Store verify token for future
+    const verifyKey=storageKey+"_v";
+    if(!localStorage.getItem(verifyKey)){
       const token=await encryptToBase64("stash-verified");
       localStorage.setItem(verifyKey,token);
+      localStorage.setItem("__sv",verifyKey);
+    } else if(localStorage.getItem("__sv")!==verifyKey){
       localStorage.setItem("__sv",verifyKey);
     }
 
@@ -2093,6 +2070,7 @@ async function handlePassphrase(){
     $("ppError").style.display="block";
     $("ppBtn").textContent=isFirstTime?"Create Stash":"Unlock";
     $("ppBtn").disabled=false;
+    if(!isFirstTime)$("ppForgotBtn").style.display="block";
   }
 }
 
