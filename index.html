@@ -20,7 +20,7 @@
       --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;height:100%;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 
 
 /* ── Header ── */
@@ -128,6 +128,9 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .settings-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;padding:8px 0 4px;display:flex;align-items:center;gap:5px}
 .settings-section-label svg{flex-shrink:0;width:12px;height:12px}
 .settings-section-label svg{flex-shrink:0;width:12px;height:12px}
+
+.backup-sched-btn{flex:1;min-width:60px;height:34px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s}
+.backup-sched-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%);background:#242429;color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
@@ -508,8 +511,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 <!-- Backup banner -->
 
 <div class="backup-banner" id="backupBanner">
-  <div class="backup-banner-text">
-    <strong>Daily backup due</strong> — Export your data to Files. Browser storage can be cleared by iOS.
+  <div class="backup-banner-text" id="backupBannerText">
+    <strong>Backup due</strong> — Save to Files in case Safari storage is cleared.
   </div>
   <button class="backup-btn" id="backupNowBtn">Save to Files</button>
   <button class="backup-dismiss" id="backupDismissBtn">✕</button>
@@ -628,7 +631,22 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 
 <!-- Maintenance -->
 <div class="settings-section-label" style="padding-top:8px">
-  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Maintenance
+  <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Backup
+</div>
+<div class="clip-card">
+  <div class="clip-card-title" style="margin-bottom:10px">Files backup reminder</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap" id="backupScheduleBtns">
+    <button onclick="setBackupSchedule('daily')" class="backup-sched-btn" data-val="daily">Daily</button>
+    <button onclick="setBackupSchedule('weekly')" class="backup-sched-btn" data-val="weekly">Weekly</button>
+    <button onclick="setBackupSchedule('monthly')" class="backup-sched-btn" data-val="monthly">Monthly</button>
+    <button onclick="setBackupSchedule('off')" class="backup-sched-btn" data-val="off">Off</button>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6">
+    Data auto-saves silently on every change. This reminder is for your Files backup — the only copy that survives if Safari storage is cleared.
+  </div>
+</div>
+
+<!-- Maintenance -->
 </div>
 <div class="clip-card" style="cursor:pointer" id="findDupsBtn">
   <div class="clip-head">
@@ -950,7 +968,8 @@ let filterTag=null,formOpen=false,itemType="note";
 // ── Backup system ──
 const BACKUP_KEY="stash_backup";
 const BACKUP_TIME_KEY="stash_last_backup";
-const BACKUP_INTERVAL=24*60*60*1000;
+const BACKUP_SCHEDULE_KEY="stash_backup_schedule"; // daily | weekly | monthly | off
+const BACKUP_INTERVALS={daily:24*60*60*1000,weekly:7*24*60*60*1000,monthly:30*24*60*60*1000,off:Infinity};
 
 function save(){
   if(!cryptoKey||!storageKey)return;
@@ -989,13 +1008,18 @@ function checkAndRestoreBackup(){
 
 function checkBackupPrompt(){
   if(items.length===0)return;
+  const schedule=localStorage.getItem(BACKUP_SCHEDULE_KEY)||"weekly";
+  if(schedule==="off")return;
+  const interval=BACKUP_INTERVALS[schedule]||BACKUP_INTERVALS.weekly;
   const last=parseInt(localStorage.getItem(BACKUP_TIME_KEY)||"0");
-  const due=Date.now()-last>BACKUP_INTERVAL;
-  if(due){$("backupBanner").classList.add("show")}
+  if(Date.now()-last>interval){
+    const labels={daily:"Daily",weekly:"Weekly",monthly:"Monthly"};
+    $("backupBannerText").innerHTML=`<strong>${labels[schedule]} backup due</strong> — Save to Files in case Safari storage is cleared.`;
+    $("backupBanner").classList.add("show");
+  }
 }
 
 async function saveToFiles(){
-  const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
   if(cryptoKey){
     const enc=await encryptToBase64(items);
@@ -1003,12 +1027,12 @@ async function saveToFiles(){
     const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
     const blob=new Blob([payload],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download="stash-backup.json"; // fixed name — overwrites previous
     a.click();
   } else {
     const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download="stash-backup.json";
     a.click();
   }
   localStorage.setItem(BACKUP_TIME_KEY,Date.now().toString());
@@ -1031,7 +1055,7 @@ function switchTab(name){
   const page=$("page-"+name);
   if(page)page.classList.add("active");
   $("toggleFormBtn").style.display=name==="items"?"":"none";
-  if(name==="settings"){renderTrash();updateStorageStatus();loadHint();}
+  if(name==="settings"){renderTrash();updateStorageStatus();loadHint();updateBackupScheduleUI();}
 }
 
 // Tabs
@@ -1227,23 +1251,22 @@ $("typeFilter").addEventListener("change",()=>{$("itemList")._page=0;render()});
 
 // Export
 $("exportBtn").addEventListener("click",async()=>{
-  // Export encrypted — wrapped with passphrase so only owner can import
   const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
   if(cryptoKey){
-    // Encrypted export — includes salt so same passphrase can decrypt on import
     const enc=await encryptToBase64(items);
     const storedSalt=localStorage.getItem(saltKey);
     const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
     const blob=new Blob([payload],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download=`stash-export-${date}.json`; // dated — for device transfers
     a.click();
-    showToast("Encrypted backup saved ✓");
+    showToast("Encrypted export saved ✓");
   } else {
-    // Fallback — plain JSON if no crypto
     const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
-    a.href=URL.createObjectURL(blob);a.download=`stash-backup-${date}.json`;a.click();
+    a.href=URL.createObjectURL(blob);
+    a.download=`stash-export-${date}.json`;
+    a.click();
     showToast("Exported ✓");
   }
 });
@@ -1869,7 +1892,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v113";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v115";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -1967,46 +1990,62 @@ async function handlePassphrase(){
     await initWithPassphrase(pp);
 
     // ── Passphrase verification ──
-    // __sv stores the verifyKey name under a FIXED key — findable without knowing passphrase
-    // verifyKey = SHA-256(passphrase)-derived, so token lives at an unsearchable location
     const verifyKey=storageKey+"_v";
 
     if(!isFirstTime){
       const storedVerifyKey=localStorage.getItem("__sv");
 
       if(storedVerifyKey){
-        // We know exactly where the token is
-        if(storedVerifyKey!==verifyKey){
-          // Wrong passphrase — correct key name doesn't match derived one
-          cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-          $("ppError").textContent="Wrong passphrase. Try again.";
-          $("ppError").style.display="block";
-          $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-          $("ppInput").value="";$("ppInput").focus();
-          return;
-        }
-        // Key name matches — now verify the token decrypts correctly
-        const token=localStorage.getItem(verifyKey);
-        if(token){
-          const verified=await decryptFromBase64(token);
-          if(verified!=="stash-verified"){
-            cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
-            $("ppError").textContent="Wrong passphrase. Try again.";
-            $("ppError").style.display="block";
-            $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
-            $("ppInput").value="";$("ppInput").focus();
-            return;
+        if(storedVerifyKey===verifyKey){
+          // Key name matches — verify token decrypts correctly
+          const token=localStorage.getItem(verifyKey);
+          if(token){
+            const verified=await decryptFromBase64(token);
+            if(verified!=="stash-verified"){
+              cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+              $("ppError").textContent="Wrong passphrase. Try again.";
+              $("ppError").style.display="block";
+              $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+              $("ppInput").value="";$("ppInput").focus();
+              return;
+            }
+          }
+        } else {
+          // Key name mismatch — could be version change or corruption
+          // Try to decrypt the stored token as a fallback before rejecting
+          const storedToken=localStorage.getItem(storedVerifyKey);
+          if(storedToken){
+            const verified=await decryptFromBase64(storedToken);
+            if(verified==="stash-verified"){
+              // Correct passphrase — update __sv to new derived key
+              const newToken=await encryptToBase64("stash-verified");
+              localStorage.setItem(verifyKey,newToken);
+              localStorage.setItem("__sv",verifyKey);
+              localStorage.removeItem(storedVerifyKey);
+            } else {
+              // Wrong passphrase — both checks failed
+              cryptoKey=null;storageKey=null;trashKey=null;saltKey=null;items=[];trash=[];
+              $("ppError").textContent="Wrong passphrase. Try again.";
+              $("ppError").style.display="block";
+              $("ppBtn").textContent="Unlock";$("ppBtn").disabled=false;
+              $("ppInput").value="";$("ppInput").focus();
+              return;
+            }
+          } else {
+            // No token at stored key either — __sv is stale, reset it
+            const newToken=await encryptToBase64("stash-verified");
+            localStorage.setItem(verifyKey,newToken);
+            localStorage.setItem("__sv",verifyKey);
           }
         }
       } else {
-        // __sv not set yet — existing user from before this fix
-        // Store the verify token and pointer now
+        // No __sv yet — existing user from before this fix
         const newToken=await encryptToBase64("stash-verified");
         localStorage.setItem(verifyKey,newToken);
         localStorage.setItem("__sv",verifyKey);
       }
     } else {
-      // First time — store verify token under derived key, store pointer under fixed key
+      // First time — store verify token and pointer
       const token=await encryptToBase64("stash-verified");
       localStorage.setItem(verifyKey,token);
       localStorage.setItem("__sv",verifyKey);
@@ -2169,6 +2208,18 @@ function saveHint(){
 function loadHint(){
   const hint=localStorage.getItem(HINT_KEY)||"";
   if($("ppHintInput"))$("ppHintInput").value=hint;
+}
+function setBackupSchedule(val){
+  localStorage.setItem(BACKUP_SCHEDULE_KEY,val);
+  updateBackupScheduleUI();
+  const labels={daily:"Daily reminders on",weekly:"Weekly reminders on",monthly:"Monthly reminders on",off:"Backup reminders off"};
+  showToast(labels[val]+" ✓");
+}
+function updateBackupScheduleUI(){
+  const current=localStorage.getItem(BACKUP_SCHEDULE_KEY)||"weekly";
+  document.querySelectorAll(".backup-sched-btn").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.val===current);
+  });
 }
 
 function forgotFromLockScreen(){
