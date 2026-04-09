@@ -798,20 +798,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD93D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     </div>
     <div>
-      <div class="clip-card-title">Backup</div>
+      <div class="clip-card-title">Export</div>
       <div class="clip-body" style="margin-top:3px">Save an encrypted backup — only openable with your passphrase. Safe to keep in Files.</div>
-    </div>
-  </div>
-</div>
-
-<div class="clip-card" style="cursor:pointer" id="exportShareBtn">
-  <div class="clip-head">
-    <div class="dd-item-icon" style="background:#0a1a2e;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D96FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    </div>
-    <div>
-      <div class="clip-card-title">Share with a friend</div>
-      <div class="clip-body" style="margin-top:3px">Export an unencrypted file anyone can import — no passphrase needed. Delete it after sharing.</div>
     </div>
   </div>
 </div>
@@ -988,7 +976,7 @@ async function initWithPassphrase(pp){
 }
 
 let items=[];
-let filterTags=new Set(),formOpen=false,itemType="note";
+let filterTag=null,formOpen=false,itemType="note";
 
 // ── Backup system ──
 const BACKUP_KEY="stash_backup";
@@ -1308,7 +1296,7 @@ $("searchInput").addEventListener("input",()=>{$("itemList")._page=0;$("itemList
 $("sortSelect").addEventListener("change",()=>{$("itemList")._page=0;render()});
 $("typeFilter").addEventListener("change",()=>{$("itemList")._page=0;render()});
 
-// Export — encrypted backup
+// Export
 $("exportBtn").addEventListener("click",async()=>{
   const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
@@ -1318,28 +1306,16 @@ $("exportBtn").addEventListener("click",async()=>{
     const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
     const blob=new Blob([payload],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download=`stash-export-${date}.json`; // dated — for device transfers
     a.click();
-    showToast("Encrypted backup saved ✓");
+    showToast("Encrypted export saved ✓");
   } else {
     const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download=`stash-export-${date}.json`;
     a.click();
-    showToast("Backup saved ✓");
+    showToast("Exported ✓");
   }
-});
-
-// Share with friend — unencrypted export anyone can import
-$("exportShareBtn").addEventListener("click",()=>{
-  if(!confirm("This exports an unencrypted file anyone can import into Stash.\n\nDelete it after sharing — it is not password protected.\n\nContinue?"))return;
-  const date=new Date().toISOString().slice(0,10);
-  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`stash-share-${date}.json`;
-  a.click();
-  showToast("Share file saved ✓");
 });
 
 // Clear all
@@ -1785,25 +1761,18 @@ function render(){
   if(!allTags.length){tb.classList.add("hidden")}
   else{
     tb.classList.remove("hidden");tb.innerHTML="";
-    const ab=pill("All",filterTags.size===0);
-    ab.addEventListener("click",()=>{filterTags.clear();render()});
-    tb.appendChild(ab);
+    const ab=pill("All",!filterTag);ab.addEventListener("click",()=>{filterTag=null;render()});tb.appendChild(ab);
     allTags.forEach(tag=>{
-      const active=filterTags.has(tag);
-      const p=pill(tag,active);
-      if(!active){p.style.borderColor=hashColor(tag)+"55";p.style.color=hashColor(tag);}
-      p.addEventListener("click",()=>{
-        if(filterTags.has(tag))filterTags.delete(tag);
-        else filterTags.add(tag);
-        render();
-      });
+      const p=pill(tag,filterTag===tag);
+      if(filterTag!==tag){p.style.borderColor=hashColor(tag)+"55";p.style.color=hashColor(tag)}
+      p.addEventListener("click",()=>{filterTag=filterTag===tag?null:tag;render()});
       tb.appendChild(p);
     });
   }
 
   let res=[...items];
   if(q)res=res.filter(i=>i.title.toLowerCase().includes(q)||(i.description||"").toLowerCase().includes(q)||(i.url||"").toLowerCase().includes(q)||i.tags.some(t=>t.toLowerCase().includes(q)));
-  if(filterTags.size)res=res.filter(i=>[...filterTags].every(t=>i.tags.includes(t)));
+  if(filterTag)res=res.filter(i=>i.tags.includes(filterTag));
   if(tf!=="all")res=res.filter(i=>(i.type||"note")===tf);
   if(srt==="oldest")res.sort((a,b)=>a.createdAt-b.createdAt);
   else if(srt==="az")res.sort((a,b)=>a.title.localeCompare(b.title));
@@ -1865,7 +1834,7 @@ function render(){
       item.tags.forEach(tag=>{
         const t=document.createElement("span");t.className="card-tag";t.textContent=tag;
         const c=hashColor(tag);t.style.background=c+"18";t.style.borderColor=c+"44";t.style.color=c;
-        t.addEventListener("click",e=>{e.stopPropagation();if(filterTags.has(tag))filterTags.delete(tag);else filterTags.add(tag);render()});
+        t.addEventListener("click",e=>{e.stopPropagation();filterTag=filterTag===tag?null:tag;render()});
         tg.appendChild(t);
       });
       card.appendChild(tg);
@@ -1980,7 +1949,7 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v134";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v135";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
 
@@ -2327,14 +2296,7 @@ function forgotPassphrase(){
   setTimeout(()=>{
     wipeAllData();
     showToast("Backup saved. Starting fresh…");
-    setTimeout(()=>{
-      const s=$("ppScreen");
-      s.style.display="none";
-      s.style.zIndex="-1";
-      s.style.visibility="hidden";
-      void s.offsetHeight;
-      showPassphraseScreen();
-    },1200);
+    setTimeout(()=>showPassphraseScreen(),1200);
   },800);
 }
 
