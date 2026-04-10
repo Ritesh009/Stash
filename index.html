@@ -89,7 +89,7 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .grp-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(–dim);font-weight:600;padding:14px 4px 6px}
 
 /* ── Cards — borderless, elevation-based ── */
-.card-wrap{position:relative;overflow:hidden;border-radius:var(–radius);width:100%}
+.card-wrap{position:relative;overflow:hidden;border-radius:var(–radius);-webkit-transform:translateZ(0);transform:translateZ(0);width:100%}
 .del-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:#c0392b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .edit-bg{position:absolute;left:0;top:0;bottom:0;width:80px;background:#1a3a6a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .card{position:relative;z-index:1;background:var(–surface);border:none;border-radius:var(–radius);padding:13px 15px;display:flex;flex-direction:column;gap:5px;animation:cardIn .18s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
@@ -798,20 +798,8 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD93D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     </div>
     <div>
-      <div class="clip-card-title">Backup</div>
+      <div class="clip-card-title">Export</div>
       <div class="clip-body" style="margin-top:3px">Save an encrypted backup — only openable with your passphrase. Safe to keep in Files.</div>
-    </div>
-  </div>
-</div>
-
-<div class="clip-card" style="cursor:pointer" id="exportShareBtn">
-  <div class="clip-head">
-    <div class="dd-item-icon" style="background:#0a1a2e;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4D96FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    </div>
-    <div>
-      <div class="clip-card-title">Share with a friend</div>
-      <div class="clip-body" style="margin-top:3px">Export an unencrypted file anyone can import — no passphrase needed. Delete it after sharing.</div>
     </div>
   </div>
 </div>
@@ -1308,7 +1296,7 @@ $("searchInput").addEventListener("input",()=>{$("itemList")._page=0;$("itemList
 $("sortSelect").addEventListener("change",()=>{$("itemList")._page=0;render()});
 $("typeFilter").addEventListener("change",()=>{$("itemList")._page=0;render()});
 
-// Export — encrypted backup
+// Export
 $("exportBtn").addEventListener("click",async()=>{
   const date=new Date().toISOString().slice(0,10);
   const a=document.createElement("a");
@@ -1318,28 +1306,16 @@ $("exportBtn").addEventListener("click",async()=>{
     const payload=JSON.stringify({v:1,encrypted:true,salt:storedSalt,data:enc});
     const blob=new Blob([payload],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download=`stash-export-${date}.json`; // dated — for device transfers
     a.click();
-    showToast("Encrypted backup saved ✓");
+    showToast("Encrypted export saved ✓");
   } else {
     const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
     a.href=URL.createObjectURL(blob);
-    a.download=`stash-backup-${date}.json`;
+    a.download=`stash-export-${date}.json`;
     a.click();
-    showToast("Backup saved ✓");
+    showToast("Exported ✓");
   }
-});
-
-// Share with friend — unencrypted export anyone can import
-$("exportShareBtn").addEventListener("click",()=>{
-  if(!confirm("This exports an unencrypted file anyone can import into Stash.\n\nDelete it after sharing — it is not password protected.\n\nContinue?"))return;
-  const date=new Date().toISOString().slice(0,10);
-  const blob=new Blob([JSON.stringify(items,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`stash-share-${date}.json`;
-  a.click();
-  showToast("Share file saved ✓");
 });
 
 // Clear all
@@ -1980,13 +1956,8 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  // Unregister all old service workers first to force fresh load
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    Promise.all(regs.map(r=>r.unregister())).then(()=>{
-      const sw=`const C="stash-v136";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
+  const sw=`const C="stash-v138";const PATHS=["/Stash/","/Stash/index.html"];self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(PATHS)));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
-    });
-  });
 }
 
 // Splash — dismiss after box animation completes
@@ -2332,12 +2303,7 @@ function forgotPassphrase(){
   setTimeout(()=>{
     wipeAllData();
     showToast("Backup saved. Starting fresh…");
-    setTimeout(()=>{
-      const s=$("ppScreen");
-      s.style.display="none";s.style.zIndex="-1";s.style.visibility="hidden";
-      void s.offsetHeight;
-      showPassphraseScreen();
-    },1200);
+    setTimeout(()=>showPassphraseScreen(),1200);
   },800);
 }
 
