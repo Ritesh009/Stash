@@ -96,13 +96,10 @@ label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase
 .card{position:relative;z-index:1;background:var(--surface);border:none;border-radius:var(--radius);padding:13px 15px;display:flex;flex-direction:column;gap:5px;animation:cardIn .18s ease;transition:transform .25s ease;will-change:transform;touch-action:pan-y;width:100%}
 .card:active{opacity:.85}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 .card-top-row{display:flex;align-items:center;min-width:0}
 .card-title{font-size:14px;color:var(--text);line-height:1.4;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.02em}
-.card-tags-inline{display:flex;gap:4px;flex-shrink:0;flex-wrap:nowrap;max-width:45%;overflow:hidden}
 .card-tags-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
 .card-desc{font-size:12px;color:var(--muted);line-height:1.5;letter-spacing:-.01em}
-.card-tag{font-size:10px;padding:2px 7px;border-radius:20px;cursor:pointer;border:none;line-height:1.6;letter-spacing:.01em;font-weight:500;opacity:.85}
 .card-tag{font-size:10px;padding:2px 8px;border-radius:20px;cursor:pointer;border:1px solid;line-height:1.6;letter-spacing:.01em;font-weight:500;white-space:nowrap;flex-shrink:0}
 .card-date{font-size:10px;color:var(--dim)}
 .card-url-row{display:flex;align-items:center;gap:6px}
@@ -1333,7 +1330,6 @@ $("bulkDeleteBtn").addEventListener("click",()=>{
   document.querySelector(".tab[data-tab='items']").classList.add("active");
   $("page-items").classList.add("active");
   $("toggleFormBtn").style.display="";
-
   
   bulkMode=true;bulkSelected=new Set();
   render();
@@ -1367,7 +1363,6 @@ function findDupGroups(){
 }
 
 function openDupScanner(){
-
   
   dupGroups=findDupGroups();
   dupGroupIdx=0;
@@ -1499,7 +1494,6 @@ $("restoreCancelBtn").addEventListener("click",closeRestoreSheet);
 
 // Import browser bookmarks
 $("importBookmarksBtn").addEventListener("click",()=>{
-
   
   $("bmkSheet").classList.add("show");
   $("sheetOverlay").classList.add("show");
@@ -1825,7 +1819,6 @@ function render(){
     const card=document.createElement("div");card.className="card";
     const dt=cleanTitle(item.title);
 
-    // Title + tags inline on same row
     // Title row — full width, no competition
     const topRow=document.createElement("div");topRow.className="card-top-row";
     const ti=document.createElement("div");ti.className="card-title";ti.textContent=dt;
@@ -1834,8 +1827,6 @@ function render(){
 
     // Tags row — below title, left-aligned, wraps freely
     if(item.tags.length){
-      const tg=document.createElement("div");tg.className="card-tags-inline";
-      item.tags.slice(0,2).forEach(tag=>{
       const tg=document.createElement("div");tg.className="card-tags-row";
       item.tags.forEach(tag=>{
         const t=document.createElement("span");t.className="card-tag";t.textContent=tag;
@@ -1843,16 +1834,8 @@ function render(){
         t.addEventListener("click",e=>{e.stopPropagation();filterTag=filterTag===tag?null:tag;render()});
         tg.appendChild(t);
       });
-      if(item.tags.length>2){
-        const more=document.createElement("span");more.className="card-tag";
-        more.textContent=`+${item.tags.length-2}`;
-        more.style.background="var(--surface)";more.style.borderColor="var(--border)";more.style.color="var(--muted)";
-        tg.appendChild(more);
-      }
-      topRow.appendChild(tg);
       card.appendChild(tg);
     }
-    card.appendChild(topRow);
 
     // Make whole card clickable — bulk mode selects, otherwise URL opens or edit
     card.style.cursor="pointer";
@@ -1963,7 +1946,6 @@ function pill(label,active){
 
 // Service Worker
 if("serviceWorker" in navigator){
-  const sw=`const C="stash-v127";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   const sw=`const C="stash-v130";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/"])));self.skipWaiting()});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim()});self.addEventListener("fetch",e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"})));
 }
